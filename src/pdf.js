@@ -94,8 +94,13 @@ export async function renderQuotePdf(quote) {
   const html = fillTemplate(template, quote);
 
   const browser = await puppeteer.launch({
-    headless: "new",
-    args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    headless: true,
+    args: [
+      "--no-sandbox",
+      "--disable-setuid-sandbox",
+      "--disable-dev-shm-usage", // חשוב לשרתים עם מעט זיכרון (Render חינמי)
+      "--disable-gpu",
+    ],
   });
   try {
     const page = await browser.newPage();
