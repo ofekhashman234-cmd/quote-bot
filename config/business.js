@@ -19,7 +19,8 @@ export const business = {
   // --- ברירות מחדל להצעה ---
   currency: "₪",
   currencyName: "שקלים",
-  vatNote: "המחירים כוללים מע\"מ.",
+  vatNote: "כל המחירים בהצעה זו הם סופיים וכוללים מע\"מ.",
+  revisionsNote: "ההצעה כוללת עד 2 סבבי תיקונים.",
   defaultValidityDays: 14,                  // כמה ימים ההצעה תקפה
   defaultPaymentTerms: "50% מקדמה בתחילת העבודה, 50% בסיום ולפני העלאה לאוויר.",
 

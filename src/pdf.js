@@ -35,6 +35,14 @@ function escapeHtml(str = "") {
     .replace(/>/g, "&gt;");
 }
 
+// מספר הצעה אוטומטי לפי תאריך, למשל "2026-0610-417"
+function quoteNumber() {
+  const d = new Date();
+  const p = (n) => String(n).padStart(2, "0");
+  const rand = Math.floor(100 + Math.random() * 900);
+  return `${d.getFullYear()}-${p(d.getMonth() + 1)}${p(d.getDate())}-${rand}`;
+}
+
 function fillTemplate(template, quote) {
   const currency = quote.currency || business.currency;
 
@@ -51,6 +59,10 @@ function fillTemplate(template, quote) {
       ? `<div class="row discount"><span>הנחה</span><span>−${money(quote.discount, currency)}</span></div>`
       : "";
 
+  // המחירים כוללים מע"מ — מחשבים כמה מתוך הסה"כ הוא מע"מ (18%), לתצוגה בלבד.
+  const VAT_RATE = 0.18;
+  const vatAmount = Math.round((Number(quote.total) || 0) * VAT_RATE / (1 + VAT_RATE));
+
   const notesBlock = quote.notes
     ? `<div class="block"><span class="label">הערות:</span> ${escapeHtml(quote.notes)}</div>`
     : "";
@@ -63,6 +75,8 @@ function fillTemplate(template, quote) {
     CONTACT_PHONE: contactPhone,
     CONTACT_EMAIL: contactEmail,
     CONTACT_WEBSITE: contactWebsite,
+    CONTACT_PHONE_INLINE: escapeHtml(business.phone || ""),
+    QUOTE_NUMBER: quoteNumber(),
     CLIENT_NAME: escapeHtml(quote.client_name),
     DATE: new Date().toLocaleDateString("he-IL"),
     INTRO: escapeHtml(quote.intro),
@@ -70,9 +84,11 @@ function fillTemplate(template, quote) {
     SUBTOTAL: money(quote.subtotal, currency),
     DISCOUNT_ROW: discountRow,
     TOTAL: money(quote.total, currency),
+    VAT_AMOUNT: money(vatAmount, currency),
     TIMELINE: escapeHtml(quote.timeline),
     PAYMENT_TERMS: escapeHtml(quote.payment_terms),
     VALIDITY: quote.validity_days ?? business.defaultValidityDays,
+    REVISIONS_NOTE: escapeHtml(business.revisionsNote || ""),
     NOTES_BLOCK: notesBlock,
     VAT_NOTE: escapeHtml(business.vatNote),
   };
@@ -104,7 +120,16 @@ export async function renderQuotePdf(quote) {
   });
   try {
     const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+    // domcontentloaded מהיר; ואז ממתינים לפונט עד 4 שניות בלבד כדי לא להיתקע על הרשת.
+    await page.setContent(html, { waitUntil: "domcontentloaded" });
+    await page.evaluate(async () => {
+      try {
+        await Promise.race([
+          document.fonts.ready,
+          new Promise((resolve) => setTimeout(resolve, 4000)),
+        ]);
+      } catch (_) {}
+    });
     const pdf = await page.pdf({
       format: "A4",
       printBackground: true,

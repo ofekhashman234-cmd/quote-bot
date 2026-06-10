@@ -76,9 +76,12 @@ app.post("/api/quote", async (req, res) => {
   try {
     const lead = {
       clientName: req.body.clientName,
+      gender: req.body.gender,
       projectType: req.body.projectType,
       requirements: req.body.requirements,
-      budget: req.body.budget,
+      finalPrice: req.body.finalPrice,
+      discountType: req.body.discountType,
+      discountValue: req.body.discountValue,
       deadline: req.body.deadline,
       notes: req.body.notes,
     };
