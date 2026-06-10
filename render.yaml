@@ -1,0 +1,18 @@
+# הגדרות פריסה ל-Render (אירוח חינמי בענן)
+# אחרי שמחברים את ה-repo ל-Render, הוא קורא את הקובץ הזה אוטומטית.
+# את הערכים הסודיים (מפתח/סיסמה) מגדירים בלוח הבקרה של Render, לא כאן.
+services:
+  - type: web
+    name: quote-bot
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false        # להזין ידנית בלוח הבקרה
+      - key: APP_PASSWORD
+        sync: false        # הסיסמה לכניסה לאתר
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/.cache/puppeteer

@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>הצעת מחיר</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="wrap">
+    <header class="top">
+      <h1>📄 הצעת מחיר</h1>
+      <p class="sub">מלא את פרטי הליד, והסוכן יכין הצעת מחיר ב-PDF.</p>
+    </header>
+
+    <form id="form" class="card">
+      <label>שם הלקוח / העסק
+        <input name="clientName" required placeholder="לדוגמה: סטודיו יופי" />
+      </label>
+
+      <label>סוג הפרויקט
+        <select name="projectType" required>
+          <option value="">בחר…</option>
+          <option>אתר תדמית</option>
+          <option>דף נחיתה</option>
+          <option>אפליקציה</option>
+          <option>עריכת וידאו</option>
+          <option>בוט / סוכן AI</option>
+        </select>
+      </label>
+
+      <label>מה הליד צריך? (דרישות)
+        <textarea name="requirements" rows="3" required placeholder="תאר את מה שהלקוח ביקש"></textarea>
+      </label>
+
+      <div class="row">
+        <label>תקציב משוער <span class="opt">(לא חובה)</span>
+          <input name="budget" placeholder="לדוגמה: ~3000 ₪" />
+        </label>
+        <label>לוח זמנים מבוקש <span class="opt">(לא חובה)</span>
+          <input name="deadline" placeholder="לדוגמה: תוך שבועיים" />
+        </label>
+      </div>
+
+      <label>פרטים נוספים מהשיחה <span class="opt">(לא חובה)</span>
+        <textarea name="notes" rows="3" placeholder="הדבק כאן כל מה שהליד אמר — הסוכן יבין לבד"></textarea>
+      </label>
+
+      <button type="submit" id="btn">✨ צור הצעת מחיר</button>
+      <div id="status" class="status"></div>
+    </form>
+
+    <footer class="foot">הקובץ ייפתח להורדה ושיתוף.</footer>
+  </div>
+
+  <script>
+    const form = document.getElementById("form");
+    const btn = document.getElementById("btn");
+    const status = document.getElementById("status");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      btn.disabled = true;
+      status.className = "status loading";
+      status.textContent = "מכין הצעת מחיר… זה יכול לקחת כ-20 שניות ⏳";
+
+      const data = Object.fromEntries(new FormData(form).entries());
+      try {
+        const res = await fetch("/api/quote", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.error || "תקלה ביצירת ההצעה");
+        }
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        // פתיחה בכרטיסייה חדשה (במובייל מאפשר הורדה/שיתוף)
+        window.open(url, "_blank");
+        status.className = "status ok";
+        status.innerHTML =
+          'ההצעה מוכנה! ✅ אם לא נפתחה — <a href="' + url + '" target="_blank">לחץ כאן</a>.';
+      } catch (err) {
+        status.className = "status err";
+        status.textContent = "❌ " + err.message;
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

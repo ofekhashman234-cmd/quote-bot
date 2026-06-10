@@ -1,0 +1,19 @@
+{
+  "name": "quote-bot",
+  "version": "1.0.0",
+  "description": "סוכן AI להצעות מחיר — אתר",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "puppeteer": "^24.0.0"
+  }
+}
