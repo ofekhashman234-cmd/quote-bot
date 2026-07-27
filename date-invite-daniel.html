@@ -83,6 +83,7 @@
     z-index:50;
   }
   #noBtn.loose{position:fixed}
+  #yesBtn{position:relative;z-index:60} /* תמיד מעל הכפתור הבורח */
 
   /* ---------- אוכל ---------- */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:11px;margin:4px 0 18px}
@@ -279,12 +280,25 @@
     var w = noBtn.offsetWidth || r.width, h = noBtn.offsetHeight || r.height;
     var maxX = Math.max(8, window.innerWidth  - w - 12);
     var maxY = Math.max(8, window.innerHeight - h - 12);
+    // אסור לו לנחות על כפתור "כן" (או קרוב אליו) — כדי שתמיד אפשר יהיה ללחוץ עליו
+    var yes = document.getElementById("yesBtn").getBoundingClientRect();
+    var PAD = 28;
+    function blocked(x,y){
+      var hitsYes = !(x + w < yes.left - PAD || x > yes.right + PAD ||
+                      y + h < yes.top  - PAD || y > yes.bottom + PAD);
+      var tooClose = Math.abs(x - r.left) < 90 && Math.abs(y - r.top) < 90;
+      return hitsYes || tooClose;
+    }
     var x, y, tries = 0;
     do {
       x = 10 + Math.random()*maxX;
       y = 10 + Math.random()*maxY;
       tries++;
-    } while (tries < 12 && Math.abs(x - r.left) < 90 && Math.abs(y - r.top) < 90);
+    } while (tries < 40 && blocked(x,y));
+    if (blocked(x,y)){            // גיבוי: פינה רחוקה מכפתור "כן"
+      x = (yes.left > window.innerWidth/2) ? 10 : maxX;
+      y = (yes.top  > window.innerHeight/2) ? 10 : maxY;
+    }
     noBtn.style.left = x + "px";
     noBtn.style.top  = y + "px";
     noBtn.style.transform = "rotate(" + (Math.random()*40-20) + "deg)";
