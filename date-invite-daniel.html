@@ -69,6 +69,7 @@
     color:#fff;box-shadow:0 8px 20px rgba(255,107,157,.45);
     transition:transform .15s ease, box-shadow .15s ease;
   }
+  a.btn{display:block;text-decoration:none;text-align:center} /* קישור אמיתי — לא נחסם כחלון קופץ */
   .btn:hover{transform:translateY(-3px) scale(1.04);box-shadow:0 12px 26px rgba(255,107,157,.55)}
   .btn:active{transform:scale(.97)}
   .btn.ghost{background:#fff;color:var(--pink-dark);border:2px solid var(--pink-soft);box-shadow:0 6px 16px rgba(225,75,127,.15)}
@@ -206,10 +207,10 @@
       <div class="letter" id="letter"></div>
       <div class="summary" id="summary"></div>
       <div class="send-row">
-        <button class="btn" id="waBtn">שלחי לי את התשובה בוואטסאפ 💌</button>
-        <button class="btn ghost" id="mailBtn">או שלחי במייל ✉️</button>
+        <a class="btn" id="waBtn" href="#" target="_blank" rel="noopener">שלחי לי את התשובה בוואטסאפ 💌</a>
+        <a class="btn ghost" id="mailBtn" href="#">או שלחי במייל ✉️</a>
       </div>
-      <p class="note">לוחצים על הכפתור, נפתחת הודעה מוכנה עם כל הפרטים — רק ללחוץ שליחה 😉</p>
+      <p class="note">לחיצה על הכפתור פותחת לך צ׳אט בוואטסאפ איתי, עם ההודעה כבר מוכנה — רק ללחוץ שליחה 😉</p>
       <div class="sig">מחכה לך 💗</div>
     </div>
   </section>
@@ -222,7 +223,7 @@
 
   /* ====== הגדרות ====== */
   var MY_EMAIL = "ofekhashman234@gmail.com";
-  var MY_PHONE = ""; // אפשר למלא מספר בפורמט בינלאומי, לדוגמה: "972501234567"
+  var MY_PHONE = "972535309905"; // 053-530-9905 בפורמט בינלאומי
 
   var state = { food:"", foodEmoji:"", date:null, time:"" };
 
@@ -550,6 +551,7 @@
       row("היום",  dateText()) +
       row("השעה",  "🕗 " + state.time);
 
+    buildLinks();
     show("s4");
   }
   function row(k,v){
@@ -563,17 +565,18 @@
            "🕗 שעה: " + state.time + "\n\n" +
            "מחכה לדייט שלנו 🥰";
   }
-  document.getElementById("waBtn").addEventListener("click", function(){
-    var base = MY_PHONE ? "https://wa.me/" + MY_PHONE + "?text=" : "https://wa.me/?text=";
-    window.open(base + encodeURIComponent(message()), "_blank");
-    burst(25);
-  });
-  document.getElementById("mailBtn").addEventListener("click", function(){
-    window.location.href = "mailto:" + MY_EMAIL +
+  // הקישורים נבנים מראש (ולא נפתחים דרך window.open) — כך הם לא נחסמים
+  // כחלון קופץ, ועובדים גם בנייד וגם כשהדף מוצג בתוך מסגרת
+  function buildLinks(){
+    document.getElementById("waBtn").href =
+      "https://wa.me/" + MY_PHONE + "?text=" + encodeURIComponent(message());
+    document.getElementById("mailBtn").href =
+      "mailto:" + MY_EMAIL +
       "?subject=" + encodeURIComponent("אמרתי כן 💘 — הדייט שלנו") +
       "&body=" + encodeURIComponent(message());
-    burst(25);
-  });
+  }
+  document.getElementById("waBtn").addEventListener("click", function(){ burst(25); });
+  document.getElementById("mailBtn").addEventListener("click", function(){ burst(25); });
 
 })();
 </script>
