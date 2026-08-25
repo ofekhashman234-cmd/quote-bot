@@ -1,109 +1,427 @@
-@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap');
 
+/* ============================================================
+   Design tokens
+   צבעים מותאמים למצב בהיר וכהה (Craft: הצבע מסתגל לסביבה)
+   ============================================================ */
 :root {
-  --brand: #1a73e8;
-  --bg: #f3f4f6;
-  --card: #ffffff;
-  --text: #1f2937;
-  --muted: #6b7280;
-  --border: #e5e7eb;
+  --bg:            #f2f2f7;
+  --bg-elevated:   #ffffff;
+  --fill:          #ffffff;
+  --fill-secondary:#f7f7fa;
+
+  --label:         #1c1c1e;
+  --label-2:       #5b5b60;
+  --label-3:       #8e8e93;
+
+  --separator:     rgba(60, 60, 67, 0.13);
+  --separator-2:   rgba(60, 60, 67, 0.08);
+
+  --accent:        #0071e3;
+  --accent-press:  #0062c4;
+  --accent-tint:   rgba(0, 113, 227, 0.14);
+  --green:         #17803d;
+  --red:           #d63a2f;
+
+  /* חומרים שקופים — שכבה צפה מעל התוכן */
+  --material:      rgba(250, 250, 252, 0.72);
+  --material-thick:rgba(255, 255, 255, 0.86);
+  --material-edge: rgba(255, 255, 255, 0.55);
+  --scrim:         rgba(0, 0, 0, 0.28);
+
+  --shadow-1: 0 1px 2px rgba(0,0,0,.04), 0 4px 14px rgba(0,0,0,.05);
+  --shadow-2: 0 1px 3px rgba(0,0,0,.06), 0 12px 34px rgba(0,0,0,.10);
+  /* משטח גדול = חומר עבה יותר: טשטוש חזק וצל עמוק יותר */
+  --shadow-sheet: 0 -1px 3px rgba(0,0,0,.05), 0 -18px 60px rgba(0,0,0,.20);
+
+  --r-field: 12px;
+  --r-card:  18px;
+  --r-sheet: 26px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:            #000000;
+    --bg-elevated:   #1c1c1e;
+    --fill:          #1c1c1e;
+    --fill-secondary:#2c2c2e;
+
+    --label:         #f5f5f7;
+    --label-2:       #a1a1a6;
+    --label-3:       #8e8e93;
+
+    --separator:     rgba(255, 255, 255, 0.16);
+    --separator-2:   rgba(255, 255, 255, 0.09);
+
+    --accent:        #0a84ff;
+    --accent-press:  #339cff;
+    --accent-tint:   rgba(10, 132, 255, 0.22);
+    --green:         #30d158;
+    --red:           #ff453a;
+
+    --material:      rgba(28, 28, 30, 0.72);
+    --material-thick:rgba(32, 32, 34, 0.88);
+    --material-edge: rgba(255, 255, 255, 0.12);
+    --scrim:         rgba(0, 0, 0, 0.5);
+
+    --shadow-1: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-2: 0 12px 34px rgba(0,0,0,.55);
+    --shadow-sheet: 0 -18px 60px rgba(0,0,0,.7);
+  }
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* ============================================================
+   טיפוגרפיה — גופן המערכת קודם, Heebo לעברית.
+   ה-tracking נקבע לפי הגודל, לא ערך אחד לכל הטקסטים.
+   מרווחים ב-rem כדי שהעיצוב יגדל יחד עם הגדרת גודל הטקסט של המשתמש.
+   ============================================================ */
 body {
-  font-family: 'Heebo', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Heebo', 'Segoe UI', system-ui, sans-serif;
+  font-size: 100%;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
   background: var(--bg);
-  color: var(--text);
+  color: var(--label);
   direction: rtl;
-  line-height: 1.6;
-  padding: 16px;
-  min-height: 100vh;
+  min-height: 100dvh;
+  overscroll-behavior-y: none;
 }
 
-.wrap { max-width: 640px; margin: 0 auto; }
+/* ============================================================
+   Chrome עליון — חומר שקוף שהתוכן נגלל מתחתיו,
+   עם דהייה בקצה במקום קו מפריד קשיח.
+   ============================================================ */
+.chrome {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  padding: max(0.75rem, env(safe-area-inset-top)) 1rem 0.7rem;
+  background: var(--material);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-bottom: 1px solid transparent;
+  transition: border-color 220ms ease;
+}
+.chrome::after {                       /* scroll edge effect */
+  content: "";
+  position: absolute;
+  inset: 100% 0 auto 0;
+  height: 14px;
+  background: linear-gradient(to bottom, var(--material), transparent);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+}
+.chrome[data-scrolled="true"] { border-bottom-color: var(--separator-2); }
+.chrome[data-scrolled="true"]::after { opacity: 1; }
 
-.top { text-align: center; padding: 18px 0 14px; }
-.top h1 { font-size: 26px; font-weight: 800; color: var(--brand); }
-.top .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.chrome h1 {
+  font-size: clamp(1.35rem, 5.2vw, 1.6rem);
+  font-weight: 700;
+  line-height: 1.1;
+  letter-spacing: -0.021em;            /* טקסט גדול → tracking שלילי */
+  text-align: center;
+}
+.chrome .sub {
+  margin-top: 0.15rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  line-height: 1.35;
+  letter-spacing: 0;
+  color: var(--label-2);
+}
+
+.wrap {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 1rem 1rem calc(7rem + env(safe-area-inset-bottom));
+}
+
+/* ============================================================
+   קבוצות — קרבה מרמזת על קשר (Grouping)
+   ============================================================ */
+.group { margin-bottom: 1.35rem; }
+.group > h2 {
+  font-size: 0.78125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;              /* טקסט קטן → tracking חיובי */
+  color: var(--label-3);
+  padding: 0 0.4rem 0.45rem;
+}
 
 .card {
-  background: var(--card);
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
+  background: var(--fill);             /* משטח אטום — לא מניחים שקוף על שקוף */
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-1);
+  overflow: hidden;
+}
+.field { padding: 0.8rem 1rem 0.9rem; }
+.field + .field { border-top: 1px solid var(--separator-2); }
+.row { display: flex; }
+.row > .field { flex: 1; min-width: 0; }
+.row > .field + .field { border-top: 0; border-inline-start: 1px solid var(--separator-2); }
+@media (max-width: 30rem) {
+  .row { display: block; }
+  .row > .field + .field { border-inline-start: 0; border-top: 1px solid var(--separator-2); }
 }
 
-label {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-weight: 500;
-  font-size: 14px;
+label { display: block; }
+.field > label > .name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.006em;
+  color: var(--label-2);
+  margin-bottom: 0.3rem;
 }
-.opt { color: var(--muted); font-weight: 400; font-size: 12px; }
+.opt { font-weight: 400; color: var(--label-3); }
 
+/* ============================================================
+   שדות — משוב מיידי, בלי מסגרות רועשות
+   ============================================================ */
 input, select, textarea {
-  font-family: inherit;
-  font-size: 16px; /* 16px מונע זום אוטומטי במובייל */
-  padding: 11px 12px;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  background: #fff;
-  color: var(--text);
+  font: inherit;
+  font-size: 1rem;                     /* 16px — מונע זום אוטומטי במובייל */
+  letter-spacing: 0;
   width: 100%;
+  padding: 0.5rem 0.65rem;
+  color: var(--label);
+  background: var(--fill-secondary);
+  border: 1px solid transparent;
+  border-radius: var(--r-field);
+  transition: background-color 140ms ease, border-color 140ms ease, box-shadow 140ms ease;
 }
+input::placeholder, textarea::placeholder { color: var(--label-3); }
 input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--brand);
-  box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+  background: var(--bg-elevated);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3.5px var(--accent-tint);
 }
-textarea { resize: vertical; }
+/* גדל עם התוכן במקום ידית שינוי-גודל — הגובה נגזר ממה שנכתב */
+textarea { resize: none; overflow: hidden; min-height: 3.4rem; line-height: 1.45; }
+select {
+  appearance: none;
+  /* chevron קטן ומדויק, בקצה ההתחלתי לפי כיוון הכתיבה */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.75 6 6.25l4.5-4.5' fill='none' stroke='%238e8e93' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: left 0.7rem center;
+  background-size: 0.7rem auto;
+  background-repeat: no-repeat;
+  padding-inline-start: 2rem;
+}
 
-.row { display: flex; gap: 12px; }
-.row label { flex: 1; }
-@media (max-width: 480px) { .row { flex-direction: column; } }
+/* אימות תוך כדי הקלדה — לא בשליחה */
+.field[data-invalid="true"] input,
+.field[data-invalid="true"] textarea,
+.field[data-invalid="true"] select { border-color: var(--red); }
+.hint {
+  display: block;
+  overflow: hidden;
+  max-height: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  color: var(--red);
+  transition: max-height 200ms ease, opacity 200ms ease, margin-top 200ms ease;
+  opacity: 0;
+}
+.field[data-invalid="true"] .hint { max-height: 2.5rem; opacity: 1; margin-top: 0.3rem; }
 
+/* ============================================================
+   סרגל פעולה תחתון — חומר צף, התוכן נגלל מתחתיו
+   ============================================================ */
+.actionbar {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 20;
+  padding: 0.7rem 1rem calc(0.7rem + env(safe-area-inset-bottom));
+  background: var(--material);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  backdrop-filter: blur(24px) saturate(180%);
+  border-top: 1px solid var(--material-edge);   /* קצה בהיר = אור שנתפס בחומר */
+}
+.actionbar-inner { max-width: 40rem; margin: 0 auto; }
+
+/* ============================================================
+   כפתורים — המשוב חי בלחיצה עצמה, לא בשחרור
+   ============================================================ */
 button {
-  font-family: inherit;
-  font-size: 17px;
-  font-weight: 700;
+  font: inherit;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+  width: 100%;
+  padding: 0.85rem 1rem;
   color: #fff;
-  background: var(--brand);
-  border: none;
-  border-radius: 12px;
-  padding: 14px;
+  background: var(--accent);
+  border: 0;
+  border-radius: 14px;
   cursor: pointer;
-  margin-top: 4px;
-  transition: opacity .15s, transform .05s;
+  touch-action: manipulation;          /* בלי השהיית 300ms */
+  -webkit-tap-highlight-color: transparent;
+  will-change: transform;
+  transition: background-color 120ms ease, opacity 140ms ease;
 }
-button:hover { opacity: .92; }
-button:active { transform: scale(.99); }
-button:disabled { opacity: .6; cursor: default; }
+button:active { background: var(--accent-press); }   /* מיידי, ב-pointerdown */
+button:focus-visible { outline: 2.5px solid var(--accent); outline-offset: 3px; }
+button:disabled { opacity: 0.5; cursor: default; }
+button.secondary {
+  background: var(--fill-secondary);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--separator-2);
+}
+button.secondary:active { background: var(--separator-2); }
 
-.status { font-size: 14px; min-height: 20px; text-align: center; }
-.status.loading { color: var(--muted); }
-.status.ok { color: #16a34a; }
-.status.err { color: #dc2626; }
-.status a { color: var(--brand); }
+/* ספינר מצב — מתקדם ברציפות, לא קופץ */
+.spin {
+  display: inline-block;
+  width: 0.95em; height: 0.95em;
+  vertical-align: -0.12em;
+  margin-inline-end: 0.45em;
+  border: 2px solid rgba(255,255,255,.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 700ms linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-.foot { text-align: center; color: var(--muted); font-size: 12px; padding: 16px 0; }
+.status {
+  min-height: 1.15rem;
+  margin-top: 0.55rem;
+  text-align: center;
+  font-size: 0.8125rem;
+  letter-spacing: 0.008em;
+  color: var(--label-2);
+}
+.status.err { color: var(--red); font-weight: 500; }
+.status a { color: var(--accent); }
 
-/* --- מסך התחברות --- */
-.login-body { display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+.foot {
+  text-align: center;
+  color: var(--label-3);
+  font-size: 0.75rem;
+  letter-spacing: 0.012em;
+  padding: 0.25rem 0 0;
+}
+
+/* ============================================================
+   Sheet + scrim — משימה חוסמת: מעמעמים את הרקע ודוחפים אותו אחורה
+   ============================================================ */
+.scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: var(--scrim);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  opacity: 0;
+  pointer-events: none;
+}
+.scrim[data-open="true"] { pointer-events: auto; }
+
+.sheet {
+  position: fixed;
+  inset: auto 0 0 0;
+  z-index: 50;
+  margin: 0 auto;
+  max-width: 32rem;
+  padding: 0.5rem 1.25rem calc(1.5rem + env(safe-area-inset-bottom));
+  background: var(--material-thick);
+  -webkit-backdrop-filter: blur(34px) saturate(180%);
+  backdrop-filter: blur(34px) saturate(180%);
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  box-shadow: var(--shadow-sheet);
+  border-top: 1px solid var(--material-edge);
+  transform: translate3d(0, 100%, 0);
+  will-change: transform;
+  touch-action: none;                  /* הגרירה שלנו, לא של הדפדפן */
+  visibility: hidden;
+}
+.sheet[data-open="true"] { visibility: visible; }
+
+.grabber {
+  width: 2.25rem; height: 0.3125rem;
+  margin: 0.35rem auto 0.9rem;
+  border-radius: 999px;
+  background: var(--label-3);
+  opacity: 0.4;
+}
+.sheet h2 {
+  font-size: 1.3125rem;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.016em;
+  text-align: center;
+}
+.sheet p {
+  margin: 0.3rem 0 1.1rem;
+  text-align: center;
+  font-size: 0.875rem;
+  letter-spacing: 0.004em;
+  /* Vibrancy: מעל חומר שקוף — ניגודיות ומשקל מעט גבוהים יותר */
+  font-weight: 500;
+  color: var(--label-2);
+}
+.sheet .stack { display: flex; flex-direction: column; gap: 0.55rem; }
+.sheet .check {
+  display: block;
+  width: 3.25rem; height: 3.25rem;
+  margin: 0.2rem auto 0.7rem;
+}
+.sheet .check circle { fill: var(--green); }
+.sheet .check path {
+  stroke: #fff; stroke-width: 2.6; fill: none;
+  stroke-linecap: round; stroke-linejoin: round;
+  stroke-dasharray: 26; stroke-dashoffset: 26;
+}
+.sheet[data-open="true"] .check path { animation: draw 420ms 120ms cubic-bezier(.2,.8,.3,1) forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+
+/* ============================================================
+   מסך התחברות
+   ============================================================ */
+.login-body { display: flex; align-items: center; justify-content: center; min-height: 100dvh; padding: 1.25rem; }
 .login-card {
-  background: var(--card);
-  padding: 28px;
-  border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  background: var(--fill);
+  padding: 1.75rem 1.5rem;
+  border-radius: var(--r-card);
+  box-shadow: var(--shadow-2);
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0.85rem;
   width: 100%;
-  max-width: 340px;
+  max-width: 21rem;
 }
-.login-card h1 { text-align: center; font-size: 22px; color: var(--brand); }
-.err { color: #dc2626; font-size: 13px; text-align: center; min-height: 18px; }
+.login-card h1 {
+  text-align: center;
+  font-size: 1.375rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  margin-bottom: 0.2rem;
+}
+.err { color: var(--red); font-size: 0.8125rem; text-align: center; min-height: 1.1rem; }
+
+/* ============================================================
+   העדפות נגישות — שלושה אותות בלתי תלויים
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  /* לא "בלי משוב" — משוב עדין יותר: הצלבת שקיפות במקום תנועה */
+  .sheet { transition: opacity 200ms ease; }
+  .spin { animation-duration: 1.4s; }
+  .sheet[data-open="true"] .check path { animation: none; stroke-dashoffset: 0; }
+  * { scroll-behavior: auto !important; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .chrome, .actionbar { background: var(--bg-elevated); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .sheet { background: var(--bg-elevated); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .scrim { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .chrome::after { display: none; }
+}
+@media (prefers-contrast: more) {
+  .card, .sheet, .login-card { border: 1px solid var(--label-2); }
+  input, select, textarea { border-color: var(--label-2); background: var(--bg-elevated); }
+  .chrome, .actionbar { background: var(--bg-elevated); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .status, .field > label > .name { color: var(--label); }
+}

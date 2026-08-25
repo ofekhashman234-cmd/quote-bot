@@ -2,88 +2,238 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="color-scheme" content="light dark" />
+  <meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)" />
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)" />
   <title>הצעת מחיר</title>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link rel="stylesheet" href="/styles.css" />
 </head>
 <body>
-  <div class="wrap">
-    <header class="top">
-      <h1>📄 הצעת מחיר</h1>
-      <p class="sub">מלא את פרטי הליד, והסוכן יכין הצעת מחיר ב-PDF.</p>
-    </header>
+  <header class="chrome" id="chrome">
+    <h1>הצעת מחיר</h1>
+    <p class="sub">מלא את פרטי הליד — והסוכן יכין PDF מוכן לשליחה.</p>
+  </header>
 
-    <form id="form" class="card">
-      <label>שם הלקוח / העסק
-        <input name="clientName" required placeholder="לדוגמה: סטודיו יופי" />
-      </label>
-
-      <div class="row">
-        <label>סוג הפרויקט
-          <select name="projectType" required>
-            <option value="">בחר…</option>
-            <option>אתר תדמית</option>
-            <option>דף נחיתה</option>
-            <option>אפליקציה</option>
-            <option>עריכת וידאו</option>
-            <option>בוט / סוכן AI</option>
-          </select>
-        </label>
-        <label>פנייה ללקוח
-          <select name="gender" required>
-            <option value="זכר">לשון זכר</option>
-            <option value="נקבה">לשון נקבה</option>
-          </select>
-        </label>
+  <form id="form" class="wrap" novalidate>
+    <section class="group">
+      <h2>הלקוח</h2>
+      <div class="card">
+        <div class="field">
+          <label>
+            <span class="name">שם הלקוח / העסק</span>
+            <input name="clientName" required placeholder="לדוגמה: סטודיו יופי" autocomplete="organization" />
+          </label>
+          <span class="hint">צריך שם כדי לפנות ללקוח בהצעה</span>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>
+              <span class="name">סוג הפרויקט</span>
+              <select name="projectType" required>
+                <option value="">בחר…</option>
+                <option>אתר תדמית</option>
+                <option>דף נחיתה</option>
+                <option>אפליקציה</option>
+                <option>עריכת וידאו</option>
+                <option>בוט / סוכן AI</option>
+              </select>
+            </label>
+            <span class="hint">בחר סוג פרויקט</span>
+          </div>
+          <div class="field">
+            <label>
+              <span class="name">פנייה ללקוח</span>
+              <select name="gender" required>
+                <option value="זכר">לשון זכר</option>
+                <option value="נקבה">לשון נקבה</option>
+              </select>
+            </label>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <label>מה הליד צריך? (דרישות)
-        <textarea name="requirements" rows="3" required placeholder="תאר את מה שהלקוח ביקש"></textarea>
-      </label>
-
-      <div class="row">
-        <label>מחיר סופי ללקוח (₪, כולל מע"מ)
-          <input name="finalPrice" inputmode="numeric" placeholder="לדוגמה: 1000" />
-        </label>
-        <label>לוח זמנים מבוקש <span class="opt">(לא חובה)</span>
-          <input name="deadline" placeholder="לדוגמה: תוך שבועיים" />
-        </label>
+    <section class="group">
+      <h2>מה צריך לעשות</h2>
+      <div class="card">
+        <div class="field">
+          <label>
+            <span class="name">דרישות הליד</span>
+            <textarea name="requirements" rows="3" required placeholder="תאר את מה שהלקוח ביקש"></textarea>
+          </label>
+          <span class="hint">כתוב במשפט אחד לפחות מה הלקוח ביקש</span>
+        </div>
+        <div class="field">
+          <label>
+            <span class="name">פרטים נוספים מהשיחה <span class="opt">· לא חובה</span></span>
+            <textarea name="notes" rows="3" placeholder="הדבק כאן כל מה שהליד אמר — הסוכן יבין לבד"></textarea>
+          </label>
+        </div>
       </div>
+    </section>
 
-      <div class="row">
-        <label>הנחה (להצגה בדוח)
-          <select name="discountType">
-            <option value="none">ללא הנחה</option>
-            <option value="percent">באחוזים (%)</option>
-            <option value="amount">בסכום (₪)</option>
-          </select>
-        </label>
-        <label>גובה ההנחה <span class="opt">(אם יש)</span>
-          <input name="discountValue" inputmode="numeric" placeholder="לדוגמה: 10" />
-        </label>
+    <section class="group">
+      <h2>מחיר ולוח זמנים</h2>
+      <div class="card">
+        <div class="row">
+          <div class="field">
+            <label>
+              <span class="name">מחיר סופי ללקוח <span class="opt">· ₪ כולל מע"מ</span></span>
+              <input name="finalPrice" inputmode="numeric" placeholder="לדוגמה: 1000" />
+            </label>
+          </div>
+          <div class="field">
+            <label>
+              <span class="name">לוח זמנים <span class="opt">· לא חובה</span></span>
+              <input name="deadline" placeholder="לדוגמה: תוך שבועיים" />
+            </label>
+          </div>
+        </div>
+        <div class="row">
+          <div class="field">
+            <label>
+              <span class="name">הנחה להצגה בהצעה</span>
+              <select name="discountType" id="discountType">
+                <option value="none">ללא הנחה</option>
+                <option value="percent">באחוזים (%)</option>
+                <option value="amount">בסכום (₪)</option>
+              </select>
+            </label>
+          </div>
+          <div class="field" id="discountValueField" hidden>
+            <label>
+              <span class="name">גובה ההנחה</span>
+              <input name="discountValue" inputmode="numeric" placeholder="לדוגמה: 10" />
+            </label>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <label>פרטים נוספים מהשיחה <span class="opt">(לא חובה)</span>
-        <textarea name="notes" rows="3" placeholder="הדבק כאן כל מה שהליד אמר — הסוכן יבין לבד"></textarea>
-      </label>
+    <p class="foot">הקובץ ייפתח להורדה ושיתוף.</p>
+  </form>
 
-      <button type="submit" id="btn">✨ צור הצעת מחיר</button>
-      <div id="status" class="status"></div>
-    </form>
-
-    <footer class="foot">הקובץ ייפתח להורדה ושיתוף.</footer>
+  <div class="actionbar">
+    <div class="actionbar-inner">
+      <button type="submit" form="form" id="btn">צור הצעת מחיר</button>
+      <div id="status" class="status" role="status" aria-live="polite"></div>
+    </div>
   </div>
 
-  <script>
-    const form = document.getElementById("form");
-    const btn = document.getElementById("btn");
-    const status = document.getElementById("status");
+  <div class="scrim" id="scrim" data-open="false"></div>
+  <section class="sheet" id="sheet" data-open="false" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+    <div class="grabber" aria-hidden="true"></div>
+    <svg class="check" viewBox="0 0 40 40" aria-hidden="true">
+      <circle cx="20" cy="20" r="20" />
+      <path d="M12 20.5l5.5 5.5L28 15" />
+    </svg>
+    <h2 id="sheetTitle">ההצעה מוכנה</h2>
+    <p id="sheetSub">ה-PDF נוצר ומוכן לשליחה ללקוח.</p>
+    <div class="stack">
+      <button type="button" id="openPdf">פתח את ה-PDF</button>
+      <button type="button" class="secondary" id="closeSheet">סגור</button>
+    </div>
+  </section>
 
+  <script type="module">
+    import { spring, haptic, createSheet } from "/fluid.js";
+
+    const form   = document.getElementById("form");
+    const btn    = document.getElementById("btn");
+    const status = document.getElementById("status");
+    const chrome = document.getElementById("chrome");
+    const sheetEl = document.getElementById("sheet");
+    const scrimEl = document.getElementById("scrim");
+
+    /* --- 1. תגובה: המשוב חי בלחיצה, לא בשחרור.
+           קפיץ ולא transition — אפשר לתפוס אותו באמצע ולהפוך כיוון. --- */
+    for (const el of document.querySelectorAll("button")) {
+      let s = null;
+      const scaleTo = (target) => {
+        const shown = new DOMMatrixReadOnly(getComputedStyle(el).transform).m11 || 1;
+        if (s) s.setTarget(target);
+        else s = spring({
+          from: shown, to: target, damping: 1, response: 0.25,
+          onUpdate: (v) => { el.style.transform = `scale(${v})`; },
+          onRest: () => { s = null; },
+        });
+      };
+      el.addEventListener("pointerdown", () => scaleTo(0.97));   // מיידי, ב-pointerdown
+      for (const ev of ["pointerup", "pointercancel", "pointerleave"]) {
+        el.addEventListener(ev, () => scaleTo(1));
+      }
+    }
+
+    /* --- אפקט קצה בגלילה: ה-chrome מתגלה רק כשהתוכן באמת עובר מתחתיו --- */
+    const onScroll = () => { chrome.dataset.scrolled = window.scrollY > 4 ? "true" : "false"; };
+    document.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    /* --- Textarea שגדל עם התוכן: הגובה מגיב לכל תו, לא רק בסוף --- */
+    const autoGrow = (el) => {
+      el.style.height = "auto";
+      el.style.height = el.scrollHeight + "px";
+    };
+    for (const ta of form.querySelectorAll("textarea")) {
+      ta.addEventListener("input", () => autoGrow(ta));
+      autoGrow(ta);
+    }
+
+    /* --- 2. פשטות: שדה ההנחה מופיע רק כשהוא רלוונטי --- */
+    const discountType = document.getElementById("discountType");
+    const discountValueField = document.getElementById("discountValueField");
+    discountType.addEventListener("change", () => {
+      discountValueField.hidden = discountType.value === "none";
+    });
+
+    /* --- 3. אימות תוך כדי, לא בשליחה: מסמנים רק אחרי שהמשתמש סיים לגעת בשדה --- */
+    const fieldOf = (el) => el.closest(".field");
+    const validate = (el) => {
+      const f = fieldOf(el);
+      if (!f) return true;
+      const ok = el.checkValidity();
+      if (f.dataset.touched === "true") f.dataset.invalid = ok ? "false" : "true";
+      return ok;
+    };
+    for (const el of form.querySelectorAll("input, select, textarea")) {
+      el.addEventListener("blur", () => { fieldOf(el).dataset.touched = "true"; validate(el); });
+      el.addEventListener("input", () => validate(el));
+      el.addEventListener("change", () => validate(el));
+    }
+
+    /* --- 4. Sheet של התוצאה: נכנס מלמטה, נגרר 1:1, ויוצא לאותו כיוון --- */
+    let pdfUrl = null;
+    const sheet = createSheet(sheetEl, scrimEl, {
+      onDismiss: () => { btn.focus({ preventScroll: true }); },
+    });
+    document.getElementById("closeSheet").addEventListener("click", () => sheet.hide());
+    document.getElementById("openPdf").addEventListener("click", () => {
+      if (pdfUrl) window.open(pdfUrl, "_blank", "noopener");
+    });
+
+    /* --- 5. שליחה --- */
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+
+      const invalid = [...form.querySelectorAll("input, select, textarea")].filter((el) => {
+        fieldOf(el).dataset.touched = "true";
+        return !validate(el);
+      });
+      if (invalid.length) {
+        status.className = "status err";
+        status.textContent = "יש שדות שחסרים למעלה";
+        invalid[0].focus({ preventScroll: true });
+        invalid[0].scrollIntoView({ block: "center", behavior: "smooth" });
+        haptic(30);
+        return;
+      }
+
       btn.disabled = true;
-      status.className = "status loading";
-      status.textContent = "מכין הצעת מחיר… זה יכול לקחת כ-20 שניות ⏳";
+      btn.innerHTML = '<span class="spin"></span>מכין הצעת מחיר…';
+      status.className = "status";
+      status.textContent = "לוקח בערך 20 שניות";
 
       const data = Object.fromEntries(new FormData(form).entries());
       try {
@@ -97,17 +247,21 @@
           throw new Error(err.error || "תקלה ביצירת ההצעה");
         }
         const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        // פתיחה בכרטיסייה חדשה (במובייל מאפשר הורדה/שיתוף)
-        window.open(url, "_blank");
-        status.className = "status ok";
-        status.innerHTML =
-          'ההצעה מוכנה! ✅ אם לא נפתחה — <a href="' + url + '" target="_blank">לחץ כאן</a>.';
+        if (pdfUrl) URL.revokeObjectURL(pdfUrl);
+        pdfUrl = URL.createObjectURL(blob);
+
+        status.className = "status";
+        status.textContent = "";
+        haptic(12);                    // רק ברגע משמעותי — ובאותו פריים של החזותי
+        sheet.show();
+        window.open(pdfUrl, "_blank", "noopener");
       } catch (err) {
         status.className = "status err";
-        status.textContent = "❌ " + err.message;
+        status.textContent = err.message;
+        haptic([20, 60, 20]);
       } finally {
         btn.disabled = false;
+        btn.textContent = "צור הצעת מחיר";
       }
     });
   </script>

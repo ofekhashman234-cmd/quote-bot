@@ -45,4 +45,5 @@ npm start
 - **פרטי העסק / לוגו / צבע מותג:** ערוך את `config/business.js`
 - **עיצוב ה-PDF:** ערוך את `templates/quote.html`
 - **עיצוב הטופס:** ערוך את `public/index.html` + `public/styles.css`
+- **תנועה ומחוות** (קפיצים, גרירת ה-sheet, הטלת תנופה): `public/fluid.js`
 - **החלפת מודל AI** (לחיסכון): ב-`config/business.js` שנה `model` ל-`"claude-sonnet-4-6"`
