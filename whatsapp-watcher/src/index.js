@@ -9,7 +9,8 @@ import { Store } from "./store.js";
 import { classify } from "./matcher.js";
 import { createPipeline, createLimiter } from "./pipeline.js";
 import { createMediaLoader } from "./media.js";
-import { Telegram, createNotifier, createController } from "./telegram.js";
+import { Telegram, createNotifier, createController, timeOf } from "./telegram.js";
+import { createWakeWatcher } from "./wakeWatcher.js";
 
 const { Client, LocalAuth } = pkg;
 
@@ -84,8 +85,11 @@ function toPost(msg, { late = false } = {}) {
 
 function onWaMessage(msg, opts) {
   // סינון זול לפני כל דבר אחר: רק הקבוצה שנבחרה.
-  if (!store.group || msg.from !== store.group.id) return;
-  limit(() => pipeline.handleMessage(toPost(msg, opts))).catch((err) => console.error("שגיאה בטיפול בהודעה:", err));
+  if (!store.group || msg.from !== store.group.id) return Promise.resolve(null);
+  return limit(() => pipeline.handleMessage(toPost(msg, opts))).catch((err) => {
+    console.error("שגיאה בטיפול בהודעה:", err);
+    return null;
+  });
 }
 
 wa.on("qr", (qr) => {
@@ -94,31 +98,68 @@ wa.on("qr", (qr) => {
 });
 
 wa.on("ready", async () => {
+  const firstReady = !waReady;
   waReady = true;
   console.log(`✅ ווטסאפ מחובר (${wa.info.pushname}). קבוצה: ${store.group?.name ?? "לא נבחרה"}`);
-  if (chatId) {
-    await tg
-      .sendText(
-        `🤖 הבוט פועל${config.dryRun ? " (מצב ניסיון)" : ""}.\nקבוצה: ${store.group?.name ?? "לא נבחרה, שלח: קבוצות"}\nחיפושים: ${store.wants.length}`,
-      )
-      .catch((err) => console.error("לא הצלחתי לשלוח לטלגרם:", err.message));
+  if (!firstReady) return;
+  const downMs = store.lastAliveTs ? Date.now() - store.lastAliveTs : 0;
+  const { alerts, checked } = await catchUp();
+  const lines = [`🤖 הבוט פועל${config.dryRun ? " (מצב ניסיון)" : ""}.`];
+  if (downMs > 3 * MINUTE) {
+    lines.push(`⏸️ לא פעל ${duration(downMs)} (${timeOf(store.lastAliveTs)}–${timeOf(Date.now())}). ${catchUpSummary(alerts, checked)}`);
   }
-  await catchUp();
+  lines.push(`קבוצה: ${store.group?.name ?? "לא נבחרה, שלח: קבוצות"}`, `חיפושים: ${store.wants.length}`);
+  store.setAlive();
+  if (chatId) await tg.sendText(lines.join("\n")).catch((err) => console.error("לא הצלחתי לשלוח לטלגרם:", err.message));
 });
 
-// השלמה אחרי ניתוק: פוסטים שעלו בזמן שהבוט לא היה מחובר.
+// השלמה אחרי שינה/ניתוק: פוסטים שעלו בזמן שהבוט לא ראה. מחזיר כמה נבדקו וכמה התריעו.
 async function catchUp() {
-  if (!store.group || !store.lastSeenTs) return;
+  if (!store.group || !store.lastSeenTs) return { checked: 0, alerts: 0 };
   try {
     const chat = await wa.getChatById(store.group.id);
-    const msgs = await chat.fetchMessages({ limit: 30 });
+    const msgs = await chat.fetchMessages({ limit: config.catchUpLimit });
     const missed = msgs.filter((m) => !m.fromMe && m.timestamp * 1000 > store.lastSeenTs);
     if (missed.length) console.log(`⏱️ משלים ${missed.length} הודעות שפוספסו`);
-    for (const m of missed) onWaMessage(m, { late: true });
+    const results = await Promise.all(missed.map((m) => onWaMessage(m, { late: true })));
+    return { checked: missed.length, alerts: results.filter((r) => r?.action === "alert").length };
   } catch (err) {
     console.error("השלמת הודעות נכשלה:", err.message);
+    return { checked: 0, alerts: 0 };
   }
 }
+
+const MINUTE = 60_000;
+const duration = (ms) => (ms < 90 * MINUTE ? `${Math.round(ms / MINUTE)} דקות` : `${(ms / (60 * MINUTE)).toFixed(1)} שעות`);
+const catchUpSummary = (alerts, checked) =>
+  !checked ? "לא עלו פוסטים בזמן הזה." : alerts ? `בדקתי ${checked} פוסטים שפוספסו: ${alerts} התאמות (⏱️ למעלה).` : `בדקתי ${checked} פוסטים שפוספסו: אין התאמות.`;
+
+// 💤 המק נרדם והתעורר: מחכים שווטסאפ יתחבר שוב, משלימים, ומודיעים.
+async function waitForWhatsApp(timeoutMs = 60_000) {
+  const until = Date.now() + timeoutMs;
+  while (Date.now() < until) {
+    if ((await wa.getState().catch(() => null)) === "CONNECTED") return true;
+    await new Promise((r) => setTimeout(r, 3000));
+  }
+  return false;
+}
+
+createWakeWatcher({
+  onWake: async ({ from, to, ms }) => {
+    if (!waReady) return;
+    console.log(`💤 המחשב ישן ${duration(ms)}`);
+    if (!(await waitForWhatsApp())) {
+      console.error("🔌 ווטסאפ לא התחבר מחדש אחרי שינה, מפעיל מחדש");
+      process.exit(1); // pm2 מפעיל מחדש, וההשלמה תרוץ בהפעלה
+    }
+    const { alerts, checked } = await catchUp();
+    store.setAlive();
+    await tg
+      .sendText(`💤 המחשב ישן ${duration(ms)} (${timeOf(from)}–${timeOf(to)}). ${catchUpSummary(alerts, checked)}`)
+      .catch(() => {});
+  },
+});
+setInterval(() => waReady && store.setAlive(), MINUTE);
 
 wa.on("message", (msg) => onWaMessage(msg));
 wa.on("auth_failure", (m) => console.error("❌ החיבור לווטסאפ נכשל:", m));

@@ -16,6 +16,7 @@ const EMPTY = () => ({
   feedback: [],
   nextFeedbackId: 1,
   lastSeenTs: 0,
+  lastAliveTs: 0,
   spend: { date: "", usd: 0, notified: false },
 });
 
@@ -88,6 +89,16 @@ export class Store {
       this.state.lastSeenTs = ts;
       this.save();
     }
+  }
+
+  // הבוט רץ ברגע זה (נשמר כל דקה). אחרי הפעלה מחדש: כמה זמן הוא לא פעל.
+  get lastAliveTs() {
+    return this.state.lastAliveTs;
+  }
+
+  setAlive(ts = Date.now()) {
+    this.state.lastAliveTs = ts;
+    this.save();
   }
 
   // ── התראות ──

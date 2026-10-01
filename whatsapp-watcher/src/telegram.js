@@ -84,7 +84,7 @@ function clip(text, limit) {
   return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
 }
 
-const timeOf = (ts) =>
+export const timeOf = (ts) =>
   new Date(ts).toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false, timeZone: "Asia/Jerusalem" });
 
 /** הטקסט של ההתראה. */

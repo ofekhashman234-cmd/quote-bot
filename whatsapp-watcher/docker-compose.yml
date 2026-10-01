@@ -1,0 +1,10 @@
+# הפעלה על שרת: docker compose up -d   ·   QR ולוגים: docker compose logs -f
+services:
+  bot:
+    build: .
+    restart: unless-stopped
+    init: true # מנקה תהליכי Chrome שנשארו
+    env_file: .env
+    volumes:
+      - ./data:/app/data # חיפושים, קבוצה, מה שהבוט למד
+      - ./.wwebjs_auth:/app/.wwebjs_auth # החיבור לווטסאפ (בלי QR מחדש בכל עדכון)

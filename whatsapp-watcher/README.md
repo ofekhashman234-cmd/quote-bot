@@ -14,14 +14,18 @@
 
 ## 🚀 הקמה (30–45 דקות, פעם אחת)
 
-צריך מחשב או שרת שדלוק כל הזמן, עם [Node.js](https://nodejs.org) 20 ומעלה.
+ההוראות כאן ל**מק**. לשרת, ראה "מעבר לשרת" בהמשך.
 
 ### 1. התקנה
+1. **Node.js:** הורד מ-[nodejs.org](https://nodejs.org) את גרסת ה-**LTS** והתקן (Next → Next).
+2. **הקוד:** ב-GitHub, בענף `whatsapp-watcher`, לחץ **Code → Download ZIP** ופתח את הקובץ (או `git clone`).
+3. פתח **Terminal** (⌘ + רווח, הקלד Terminal), גרור לחלון את התיקייה `whatsapp-watcher` אחרי המילה `cd `, ולחץ Enter. אחר כך:
 ```bash
-cd whatsapp-watcher
-npm install
+npm install          # מוריד גם את Chrome של הבוט, לוקח כמה דקות
 cp .env.example .env
+open -e .env         # פותח את הקובץ לעריכה
 ```
+> אם מק חוסם את Chrome ("cannot be opened"): System Settings → Privacy & Security → למטה → **Open Anyway**.
 
 ### 2. מפתח Claude
 ב-[console.anthropic.com](https://console.anthropic.com) → API Keys → צור מפתח, והדבק ב-`.env` בשורה `ANTHROPIC_API_KEY=`.
@@ -74,7 +78,7 @@ npm start
 ## 🧪 בדיקות
 
 ```bash
-npm test          # 75 בדיקות, בלי אינטרנט ובלי עלות: קבוצה נכונה, מבקשים, אלבום, נמסר, למידה...
+npm test          # 78 בדיקות, בלי אינטרנט ובלי עלות: קבוצה נכונה, מבקשים, אלבום, נמסר, למידה...
 npm run eval      # השוואת מודלים על 38 פוסטים אמיתיים-למחצה (עולה פחות מ-$1)
 ```
 
@@ -91,17 +95,58 @@ npm run eval      # השוואת מודלים על 38 פוסטים אמיתיי�
 
 ---
 
-## 🖥️ שיהיה דלוק 24/7
+## 💻 הרצה קבועה על המק
 
+### הפעלה אוטומטית
+אחרי שהכול עובד עם `npm start`, עצור אותו (Ctrl+C) והרץ:
 ```bash
-npm install -g pm2
-pm2 start src/index.js --name mesirot
-pm2 save && pm2 startup
+sudo npm install -g pm2
+pm2 start scripts/start-mac.sh --name mesirot
+pm2 save
+pm2 startup        # מדפיס שורה שמתחילה ב-sudo: העתק, הדבק ו-Enter
 ```
-pm2 מפעיל מחדש אחרי נפילה או ניתוק. אחרי חזרה, הבוט משלים פוסטים שפוספסו (מסומנים ⏱️ באיחור).
+מעכשיו הבוט עולה לבד בכל הדלקה של המחשב, ו-pm2 מפעיל אותו מחדש אם הוא נופל.
 
-**התראה כשהבוט נופל (מומלץ):** ב-[healthchecks.io](https://healthchecks.io) (חינם) צור check של דקה,
+| פקודה | |
+|---|---|
+| `pm2 logs mesirot` | מה הבוט עושה עכשיו (יציאה: Ctrl+C) |
+| `pm2 restart mesirot` | הפעלה מחדש (למשל אחרי שינוי ב-config.js) |
+| `pm2 stop mesirot` | עצירה |
+
+### שהמק לא יירדם
+- `scripts/start-mac.sh` מריץ את הבוט עם `caffeinate`, שמונע שינה כל עוד הבוט רץ.
+- **System Settings → Battery → Options →** הפעל "Prevent automatic sleeping on power adapter when the display is off".
+- **השאר את המחשב מחובר לחשמל, עם המכסה פתוחה.** המסך יכבה לבד, וזה בסדר.
+- **סגירת המכסה מרדימה את המחשב בכל מקרה.** אם חייבים לסגור:
+  `sudo pmset -a disablesleep 1` (וכדי לבטל: `sudo pmset -a disablesleep 0`).
+  ⚠️ כשזה פעיל, לא להכניס את המחשב לתיק: הוא לא יירדם ויתחמם.
+
+### מה קורה כשהמחשב בכל זאת ישן
+הבוט מזהה את זה כשהמחשב מתעורר. הוא מחכה שווטסאפ יתחבר, בודק את הפוסטים שעלו בזמן השינה
+(עד 50, `catchUpLimit`), ושולח לך בטלגרם:
+> 💤 המחשב ישן 47 דקות (10:02–10:49). בדקתי 6 פוסטים שפוספסו: 1 התאמות (⏱️ למעלה).
+
+התאמות שנמצאו כך מסומנות **⏱️ באיחור**, כדי שתדע שאולי מישהו כבר הקדים אותך.
+
+**התראה כשהבוט נופל לגמרי (מומלץ):** ב-[healthchecks.io](https://healthchecks.io) (חינם) צור check של דקה,
 והדבק את הכתובת ב-`.env` בשורה `HEALTHCHECK_URL=`. אם הבוט שותק, תקבל מייל או הודעת טלגרם.
+שים לב: כשהמק ישן, גם זה יתריע.
+
+---
+
+## ☁️ מעבר לשרת (בעתיד)
+
+כשתרצה שהבוט ירוץ בלי תלות במחשב:
+1. **שרת:** [Hetzner](https://www.hetzner.com/cloud) → CX22 עם Ubuntu (בערך €4.5 לחודש). התקן Docker לפי ההוראות שלהם.
+2. **העברה:** העתק לשרת את תיקיית `whatsapp-watcher` **כולל** `data/` ו-`.env`.
+   כל מה שהבוט יודע עובר איתו: החיפושים, הקבוצה וכל מה שלמד.
+3. **עצור את הבוט במק** (`pm2 stop mesirot`), כדי ששניהם לא ירוצו ביחד.
+4. **בשרת:**
+   ```bash
+   docker compose up -d
+   docker compose logs -f     # סרוק את ה-QR שמופיע, פעם אחת
+   ```
+השרת מפעיל את הבוט מחדש לבד אחרי נפילה או הפעלה מחדש של השרת.
 
 ---
 
