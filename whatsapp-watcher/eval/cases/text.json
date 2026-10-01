@@ -1,0 +1,52 @@
+{
+  "wants": [
+    { "id": 1, "text": "ספה עד 800 ש״ח באזור המרכז" },
+    { "id": 2, "text": "אופניים חשמליים" },
+    { "id": 3, "text": "מיקרוגל" },
+    { "id": 4, "text": "עגלת תינוק" },
+    { "id": 5, "text": "מקרר" }
+  ],
+  "cases": [
+    { "id": "req-01", "category": "request", "expect": "none", "text": "מישהו מוסר ספה? עוברת דירה וצריכה דחוף" },
+    { "id": "req-02", "category": "request", "expect": "none", "text": "מחפשת עגלת תינוק במצב טוב, אשמח לעזרה 🙏" },
+    { "id": "req-03", "category": "request", "expect": "none", "text": "יש למישהו מקרר שהוא לא צריך?" },
+    { "id": "req-04", "category": "request", "expect": "none", "text": "למישהו יש מיקרוגל עובד למסירה? אגיע לאסוף" },
+    { "id": "req-05", "category": "request", "expect": "none", "text": "מחפש אופניים חשמליים עד 1500, תודה" },
+    { "id": "req-06", "category": "request", "expect": "none", "text": "צריכה ספה לסלון, מישהו?" },
+    { "id": "req-07", "category": "request", "expect": "none", "text": "אם למישהו יש עגלה מיותרת אשמח מאוד" },
+    { "id": "req-08", "category": "request", "expect": "none", "text": "מעוניין לקנות אופניים חשמליים משומשים, תל אביב" },
+    { "id": "req-09", "category": "request", "expect": "none", "text": "מישהו נתקל במקרר קטן למכירה?" },
+    { "id": "req-10", "category": "request", "expect": "none", "text": "בקשה: מיקרוגל לסטודנטית, באזור רמת גן" },
+    { "id": "req-11", "category": "request", "expect": "none", "text": "רלוונטי לי ספה תלת, מי שיש שישלח בפרטי" },
+    { "id": "req-12", "category": "request", "expect": "none", "text": "עגלה כזו מחפשת, בדיוק הדגם הזה" },
+    { "id": "req-13", "category": "request", "expect": "none", "text": "יש מצב שמישהו מוסר מקרר מקפיא? משפחה במצוקה" },
+    { "id": "req-14", "category": "request", "expect": "none", "text": "דרוש: אופניים חשמליים לנער בן 16" },
+    { "id": "req-15", "category": "request", "expect": "none", "text": "אני צריך מיקרוגל, מישהו מוסר? אאסוף מכל מקום במרכז" },
+
+    { "id": "off-01", "category": "offer", "expect": "match:1", "text": "ספה תלת מושבית אפורה למסירה, חולון. איסוף עצמי" },
+    { "id": "off-02", "category": "offer", "expect": "match:4", "text": "מוסרת עגלת תינוק בוגבו, מצב מצוין, פתח תקווה" },
+    { "id": "off-03", "category": "offer", "expect": "match:2", "text": "למכירה אופניים חשמליים 48V, 1200 ש״ח, ראשון לציון" },
+    { "id": "off-04", "category": "offer", "expect": "match:3", "text": "מיקרוגל LG עובד מצוין למסירה ברמת גן" },
+    { "id": "off-05", "category": "offer", "expect": "match:5", "text": "מקרר סמסונג 500 ליטר, 900 ש״ח, הרצליה" },
+    { "id": "off-06", "category": "offer", "expect": "match:1", "text": "סלון 3+2 למסירה בגבעתיים, חייב לצאת השבוע" },
+    { "id": "off-07", "category": "offer", "expect": "match:2", "text": "בייק חשמלי במצב טוב, 1500, בת ים" },
+    { "id": "off-08", "category": "offer", "expect": "match:5", "text": "מוסר מקרר מקפיא קטן, מתאים לסטודנטים. בת ים" },
+    { "id": "off-09", "category": "offer", "expect": "match:3", "text": "טוסטר אובן ומיקרוגל למסירה, מפנה דירה" },
+    { "id": "off-10", "category": "offer", "expect": "match:4", "text": "עגלה + סלקל למסירה, נס ציונה" },
+
+    { "id": "near-01", "category": "near-miss", "expect": "none-or-maybe", "text": "כורסה נוחה למסירה, רמת גן" },
+    { "id": "near-02", "category": "near-miss", "expect": "none", "text": "ספה תלת מושבית מעור, 2500 ש״ח, תל אביב" },
+    { "id": "near-03", "category": "near-miss", "expect": "none", "text": "ספה למסירה בחיפה, איסוף עד מחר" },
+    { "id": "near-04", "category": "near-miss", "expect": "none", "text": "אופניים רגילים 21 הילוכים, 300 ש״ח" },
+    { "id": "near-05", "category": "near-miss", "expect": "none", "text": "טוסטר אובן למסירה, עובד מצוין" },
+    { "id": "near-06", "category": "near-miss", "expect": "none", "text": "עגלת קניות לסופר למסירה" },
+    { "id": "near-07", "category": "near-miss", "expect": "none-or-maybe", "text": "מקרר שתייה קטן לרכב, 12V" },
+    { "id": "near-08", "category": "near-miss", "expect": "none", "text": "שולחן אוכל + 6 כיסאות למסירה, חולון" },
+
+    { "id": "oth-01", "category": "other", "expect": "none", "text": "נמסר, תודה לכולם!" },
+    { "id": "oth-02", "category": "other", "expect": "none", "text": "תזכורת: אסור לפרסם מכירות בשבת" },
+    { "id": "oth-03", "category": "other", "expect": "none", "text": "מישהו יודע אם הספה מהבוקר עוד רלוונטית?" },
+    { "id": "oth-04", "category": "other", "expect": "none", "text": "הספה נמסרה. יש עוד שידה אם מישהו רוצה" },
+    { "id": "oth-05", "category": "other", "expect": "none", "text": "תודה לדנה על הספה!! 🙏" }
+  ]
+}

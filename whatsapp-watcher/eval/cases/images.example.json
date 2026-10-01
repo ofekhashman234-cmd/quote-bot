@@ -1,0 +1,12 @@
+{
+  "_הסבר": "העתק לקובץ images.json, שים תמונות אמיתיות מהקבוצה בתיקייה eval/images, ותאר מה צפוי. expect: match:<מספר חיפוש> / none / none-or-maybe. category: request (מישהו מחפש) / offer / near-miss / other.",
+  "wants": [
+    { "id": 1, "text": "ספה עד 800 ש״ח באזור המרכז" },
+    { "id": 2, "text": "אופניים חשמליים" }
+  ],
+  "cases": [
+    { "id": "img-01", "category": "offer", "expect": "match:1", "image": "sofa.jpg", "text": "" },
+    { "id": "img-02", "category": "request", "expect": "none", "image": "stroller-wanted.jpg", "text": "מחפשת כזו" },
+    { "id": "img-03", "category": "other", "expect": "none", "image": "sofa-with-x.jpg", "text": "" }
+  ]
+}

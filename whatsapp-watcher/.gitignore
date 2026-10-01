@@ -3,3 +3,7 @@ node_modules/
 .wwebjs_auth/
 .wwebjs_cache/
 data/
+eval/results/
+eval/images/*
+!eval/images/.gitkeep
+eval/cases/images.json
