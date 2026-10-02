@@ -19,8 +19,9 @@ class Piece:
     kind: str            # "clip" | "freeze"
     src_start: float
     src_end: float       # == src_start for a freeze
-    speed: float = 1.0
+    speed: float = 1.0   # negative = plays backwards (src_start > src_end)
     dur: float = 0.0     # output duration (freeze), computed for clips
+    gain: float = 1.0    # source-audio gain for this piece
     out_start: float = 0.0
     fade_in: float = 0.0
     fade_out: float = 0.0
@@ -49,13 +50,21 @@ class TimeMap:
         self.pieces: list[Piece] = []
 
     # ---- building ----------------------------------------------------------
-    def clip(self, a, b, speed=1.0):
-        self.pieces.append(Piece("clip", a, b, speed))
+    def clip(self, a, b, speed=None, dur=None, gain=1.0):
+        """Play source a->b (a > b plays backwards). Give `dur` to fit it into an exact output
+        length (speed is derived), or `speed` directly; default real time."""
+        if dur is not None:
+            speed = (b - a) / dur
+        elif speed is None:
+            speed = 1.0 if b >= a else -1.0
+        else:
+            speed = abs(speed) * (1 if b >= a else -1)
+        self.pieces.append(Piece("clip", a, b, speed, gain=gain))
         return self
 
-    def freeze(self, t, dur, xfade=True):
+    def freeze(self, t, dur, gain=0.0):
         """Insert a frozen frame of source time t, lasting dur seconds (output)."""
-        self.pieces.append(Piece("freeze", t, t, dur=dur))
+        self.pieces.append(Piece("freeze", t, t, dur=dur, gain=gain))
         return self
 
     @classmethod
@@ -70,7 +79,7 @@ class TimeMap:
         t = 0.0
         for i, p in enumerate(self.pieces):
             if p.kind == "clip":
-                p.dur = (p.src_end - p.src_start) / p.speed
+                p.dur = (p.src_end - p.src_start) / p.speed  # speed carries the sign
             # a cut between two contiguous clips (no gap in source) needs no fade
             joined_prev = i > 0 and self._contiguous(self.pieces[i - 1], p)
             p.fade_in = 0.0 if (i == 0 or joined_prev) else self.xfade
@@ -97,6 +106,14 @@ class TimeMap:
         s = sum(w for _, w in hits) or 1.0
         return [(t, w / s) for t, w in hits]
 
+    def piece_at(self, t_out):
+        """(index, piece) of the topmost piece playing at t_out."""
+        for i in range(len(self.pieces) - 1, -1, -1):
+            p = self.pieces[i]
+            if p.out_start <= t_out < p.out_end:
+                return i, p
+        return (len(self.pieces) - 1, self.pieces[-1]) if t_out >= self.duration else (0, self.pieces[0])
+
     def to_out(self, t_src):
         """Where source time t_src lands in the output. A time inside a removed gap snaps to the
         start of the next kept piece (so an effect on a cut word still appears at the cut)."""
@@ -104,6 +121,8 @@ class TimeMap:
         for p in self.pieces:
             if p.kind != "clip":
                 continue
+            if p.speed < 0:
+                continue  # reversed pieces are not where a source moment "lives"
             if p.src_start <= t_src <= p.src_end:
                 return p.out_start + (t_src - p.src_start) / p.speed
             if p.src_start > t_src and (best is None or p.src_start < best.src_start):
@@ -111,7 +130,7 @@ class TimeMap:
         return best.out_start if best else self.duration
 
     def is_kept(self, t_src):
-        return any(p.kind == "clip" and p.src_start <= t_src < p.src_end for p in self.pieces)
+        return any(p.kind == "clip" and p.speed > 0 and p.src_start <= t_src < p.src_end for p in self.pieces)
 
     # ---- audio -----------------------------------------------------------
     def render_audio(self, audio, sr=AUDIO_SR):
@@ -121,7 +140,7 @@ class TimeMap:
         for p in self.pieces:
             o0 = int(round(p.out_start * sr))
             m = int(round(p.dur * sr))
-            if p.kind == "freeze" or m <= 0:
+            if p.kind == "freeze" or m <= 0 or p.gain <= 0:
                 continue
             src_idx = p.src_start * sr + np.arange(m) * p.speed
             if p.speed == 1.0:
@@ -137,14 +156,14 @@ class TimeMap:
             if p.fade_out > 0:
                 env *= np.sin(0.5 * np.pi * np.clip((p.dur - t) / p.fade_out, 0, 1))
             end = min(o0 + len(seg), n)
-            out[o0:end] += seg[: end - o0] * env[: end - o0, None]
+            out[o0:end] += seg[: end - o0] * (env[: end - o0, None] * p.gain)
         return out
 
     def describe(self):
         rows = []
         for p in self.pieces:
             if p.kind == "clip":
-                rows.append(f"clip   src {p.src_start:6.2f}-{p.src_end:6.2f}  ->  out {p.out_start:6.2f}-{p.out_end:6.2f}")
+                rows.append(f"clip   src {p.src_start:6.2f}-{p.src_end:6.2f} x{p.speed:5.2f}  ->  out {p.out_start:6.2f}-{p.out_end:6.2f}")
             else:
                 rows.append(f"freeze src {p.src_start:6.2f} for {p.dur:.2f}s  ->  out {p.out_start:6.2f}-{p.out_end:6.2f}")
         rows.append(f"total {self.duration:.2f}s")

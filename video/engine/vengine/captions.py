@@ -25,7 +25,17 @@ class CaptionLook:
     hold: float = 0.45                    # how long the last page stays after the last word
 
 
+MINT, BLUE, INK = (226, 238, 232, 255), (64, 156, 202, 255), (16, 38, 52, 255)
+_POSTER = TextStyle(font="Rubik.ttf", size=112, weight=900, fill=MINT, stretch=1.08, dots=1.0,
+                    hard_shadow=(0, 9, BLUE), shadow=10, shadow_alpha=150, shadow_offset=(0, 10))
+
 LOOKS = {
+    # Poster — the font look from the reference image: heavy square Hebrew, mint with halftone dots,
+    # solid blue drop; the word being said flips to blue with a mint drop. No background box.
+    "poster": CaptionLook(
+        base=_POSTER,
+        active=_POSTER.replace(fill=BLUE, hard_shadow=(0, 9, MINT)),
+        y=0.78, pop_from=0.4, pop_time=0.17, rise=30, tilt=3.0, max_words=2, max_chars=12, reveal=True),
     # A — clean & minimal: white, soft shadow, active word in accent colour, gentle rise
     "clean": CaptionLook(
         base=TextStyle(font="Rubik.ttf", size=84, weight=700, fill=(255, 255, 255, 255), shadow=10,

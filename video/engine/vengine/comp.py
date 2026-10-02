@@ -4,11 +4,18 @@ import cv2
 import numpy as np
 
 
-def cover(img, W, H, zoom=1.0, cx=0.5, cy=0.5, interp=cv2.INTER_CUBIC):
-    """Scale `img` to fill W x H (crop the overflow), with optional zoom/pan around (cx, cy)."""
-    h, w = img.shape[:2]
+def cover_matrix(w, h, W, H, zoom=1.0, cx=0.5, cy=0.5, rot=0.0, dx=0.0, dy=0.0):
     s = max(W / w, H / h) * zoom
-    M = np.float32([[s, 0, W / 2 - cx * w * s], [0, s, H / 2 - cy * h * s]])
+    c, sn = math.cos(math.radians(rot)) * s, math.sin(math.radians(rot)) * s
+    # source point (cx*w, cy*h) lands at the frame centre (+ shake offset)
+    px, py = cx * w, cy * h
+    return np.float32([[c, sn, W / 2 + dx - (c * px + sn * py)], [-sn, c, H / 2 + dy - (-sn * px + c * py)]])
+
+
+def cover(img, W, H, zoom=1.0, cx=0.5, cy=0.5, rot=0.0, dx=0.0, dy=0.0, interp=cv2.INTER_CUBIC):
+    """Scale `img` to fill W x H (crop the overflow), with zoom/pan around (cx, cy), rotation and offset."""
+    h, w = img.shape[:2]
+    M = cover_matrix(w, h, W, H, zoom, cx, cy, rot, dx, dy)
     return cv2.warpAffine(img, M, (W, H), flags=interp, borderMode=cv2.BORDER_REFLECT)
 
 

@@ -40,6 +40,9 @@ class TextStyle:
     bg: tuple | None = None      # pill background colour
     bg_pad: tuple = (28, 10)     # x, y padding of the pill
     bg_radius: int = 26
+    hard_shadow: tuple | None = None   # (dx, dy, (r, g, b, a)) solid offset copy behind the text
+    stretch: float = 1.0               # horizontal scale (wider, poster-like letters)
+    dots: float = 0.0                  # halftone dot texture strength on the fill (0..1)
 
     def replace(self, **kw):
         d = dict(self.__dict__); d.update(kw)
@@ -79,8 +82,25 @@ def render_text(text, st: TextStyle):
                                 fill=(0, 0, 0, st.shadow_alpha), stroke_width=st.stroke,
                                 stroke_fill=(0, 0, 0, st.shadow_alpha), **_draw_kw(st))
         img = Image.alpha_composite(sh.filter(ImageFilter.GaussianBlur(st.shadow)), img)
-    ImageDraw.Draw(img).text(origin, text, font=f, fill=st.fill, stroke_width=st.stroke,
-                             stroke_fill=st.stroke_fill, **_draw_kw(st))
+    if st.hard_shadow:
+        dx, dy, col = st.hard_shadow
+        hs = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ImageDraw.Draw(hs).text((origin[0] + dx, origin[1] + dy), text, font=f, fill=col, stroke_width=st.stroke,
+                                stroke_fill=col, **_draw_kw(st))
+        img = Image.alpha_composite(img, hs)
+    fg = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(fg).text(origin, text, font=f, fill=st.fill, stroke_width=st.stroke,
+                            stroke_fill=st.stroke_fill, **_draw_kw(st))
+    if st.dots:
+        fga = np.asarray(fg).astype(np.float32)
+        per = max(4, st.size // 16)
+        yy, xx = np.mgrid[0:H, 0:W]
+        d = np.hypot((xx % per) - per / 2, (yy % per) - per / 2) < per * 0.22
+        fga[..., :3] *= np.where(d, 1 - 0.18 * st.dots, 1.0)[..., None]
+        fg = Image.fromarray(fga.astype(np.uint8), "RGBA")
+    img = Image.alpha_composite(img, fg)
+    if st.stretch != 1.0:
+        img = img.resize((max(1, int(round(W * st.stretch))), H), Image.LANCZOS)
     a = np.asarray(img)
     a.setflags(write=False)
     return a
@@ -89,8 +109,8 @@ def render_text(text, st: TextStyle):
 def text_width(text, st):
     f = font(st.font, st.size, st.weight)
     l, _, r, _ = f.getbbox(text, stroke_width=st.stroke, **_draw_kw(st))
-    return r - l
+    return (r - l) * st.stretch
 
 
 def space_width(st):
-    return font(st.font, st.size, st.weight).getlength(" ") * 0.9
+    return font(st.font, st.size, st.weight).getlength(" ") * 0.9 * st.stretch
