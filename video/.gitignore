@@ -1,0 +1,4 @@
+source.*
+projects/*/cache/
+projects/*/out/
+__pycache__/
