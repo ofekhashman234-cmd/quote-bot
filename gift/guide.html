@@ -1,0 +1,249 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>הצעת מחיר שסוגרת עסקאות</title>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Gveret+Levin&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --ink: #1d2433;
+    --muted: #5b6475;
+    --accent: #f26b3a;
+    --accent-soft: #fff1ea;
+    --navy: #16213e;
+    --line: #e6e8ee;
+    --green: #1f9d6b;
+    --red: #d64545;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Heebo", sans-serif; color: var(--ink); font-size: 13.2pt; line-height: 1.6; background: #fff; }
+  .page { width: 210mm; height: 297mm; padding: 20mm 20mm 16mm; position: relative; overflow: hidden; page-break-after: always; }
+  .page:last-child { page-break-after: auto; }
+  h1, h2, h3 { margin: 0; line-height: 1.25; }
+  p { margin: 0 0 10px; }
+  .hand { font-family: "Gveret Levin", "Heebo", cursive; }
+  .footer { position: absolute; bottom: 10mm; left: 20mm; right: 20mm; display: flex; justify-content: space-between; font-size: 9.5pt; color: #9aa1ae; border-top: 1px solid var(--line); padding-top: 6px; }
+
+  /* cover */
+  .cover { background: var(--navy); color: #fff; display: flex; flex-direction: column; }
+  .cover .tag { display: inline-block; background: var(--accent); color: #fff; font-weight: 700; font-size: 11pt; padding: 5px 14px; border-radius: 99px; align-self: flex-start; }
+  .cover h1 { font-size: 40pt; font-weight: 900; margin-top: 38mm; letter-spacing: -0.5px; }
+  .cover h1 span { color: var(--accent); }
+  .cover .sub { font-size: 16pt; color: #c9d1e6; margin-top: 14px; max-width: 150mm; font-weight: 400; }
+  .cover .what { margin-top: 18mm; display: grid; gap: 10px; font-size: 13pt; color: #e9edf7; }
+  .cover .what div::before { content: "✔"; color: var(--accent); font-weight: 900; margin-left: 10px; }
+  .cover .by { margin-top: auto; display: flex; align-items: center; gap: 14px; }
+  .cover .avatar { width: 46px; height: 46px; border-radius: 50%; background: var(--accent); display: grid; place-items: center; font-weight: 900; font-size: 18pt; }
+  .cover .by small { display: block; color: #9fb0d3; font-size: 10.5pt; }
+
+  /* note */
+  .note { background: #fffbea; border: 1px solid #f3e3a1; border-radius: 4px; padding: 22px 26px; transform: rotate(-0.6deg); box-shadow: 0 6px 18px rgba(0,0,0,.06); }
+  .note .hand { font-size: 21pt; color: #3a3a3a; line-height: 1.35; }
+  .note p { font-size: 12.8pt; }
+  .note .sign { font-family: "Gveret Levin", cursive; font-size: 22pt; margin-top: 6px; color: var(--navy); }
+
+  /* tips */
+  .tip { display: grid; grid-template-columns: 46px 1fr; gap: 14px; margin-bottom: 18px; }
+  .num { width: 42px; height: 42px; border-radius: 12px; background: var(--accent-soft); color: var(--accent); font-weight: 900; font-size: 18pt; display: grid; place-items: center; }
+  .tip h2 { font-size: 17pt; font-weight: 800; margin-bottom: 4px; }
+  .tip p { color: #333b4d; }
+  .why { font-size: 11.5pt; color: var(--muted); }
+  .do { font-size: 12pt; background: #f4f6fa; border-right: 3px solid var(--navy); padding: 8px 12px; border-radius: 6px; margin-top: 6px; }
+  .do b { color: var(--navy); }
+
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 8px; }
+  .box { border-radius: 10px; padding: 12px 14px; font-size: 11.6pt; line-height: 1.5; }
+  .box .lbl { font-weight: 800; font-size: 10.5pt; margin-bottom: 4px; display: block; }
+  .bad { background: #fdf0f0; border: 1px solid #f3cccc; }
+  .bad .lbl { color: var(--red); }
+  .good { background: #eefaf4; border: 1px solid #bfe8d3; }
+  .good .lbl { color: var(--green); }
+
+  .tiers { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 8px; }
+  .tier { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 11pt; line-height: 1.45; }
+  .tier b { display: block; font-size: 12pt; }
+  .tier .price { color: var(--navy); font-weight: 800; margin-top: 4px; display: block; }
+  .tier.rec { border: 2px solid var(--accent); background: var(--accent-soft); position: relative; }
+  .tier.rec::before { content: "הכי נבחר"; position: absolute; top: -10px; left: 10px; background: var(--accent); color: #fff; font-size: 9pt; font-weight: 700; padding: 1px 8px; border-radius: 99px; }
+
+  .wa { background: #e7f8ee; border-radius: 14px 14px 4px 14px; padding: 12px 16px; font-size: 12pt; margin-top: 8px; border: 1px solid #c9eed8; }
+  .wa .meta { font-size: 9.5pt; color: var(--muted); display: block; margin-bottom: 4px; }
+
+  .pagehead { font-size: 11pt; color: var(--accent); font-weight: 700; letter-spacing: .5px; margin-bottom: 6px; }
+  .pagetitle { font-size: 24pt; font-weight: 900; margin-bottom: 18px; }
+
+  /* checklist */
+  .check { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+  .check li { display: grid; grid-template-columns: 26px 1fr; gap: 10px; align-items: start; font-size: 12pt; padding: 6px 12px; border: 1px solid var(--line); border-radius: 10px; }
+  .check li::before { content: ""; width: 20px; height: 20px; border: 2px solid var(--navy); border-radius: 5px; margin-top: 3px; }
+  .score { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 12px; }
+  .score div { border-radius: 10px; padding: 10px 12px; font-size: 11.3pt; line-height: 1.45; background: #f4f6fa; }
+  .score b { display: block; font-size: 13pt; color: var(--navy); }
+
+  /* cta */
+  .cta-card { background: var(--navy); color: #fff; border-radius: 18px; padding: 26px 28px; margin-top: 18px; }
+  .cta-card h2 { font-size: 21pt; font-weight: 900; }
+  .cta-card ul { margin: 12px 0 18px; padding-right: 20px; color: #dbe2f3; }
+  .cta-card li { margin-bottom: 6px; }
+  .btn { display: inline-block; background: var(--accent); color: #fff; text-decoration: none; font-weight: 800; font-size: 14pt; padding: 12px 26px; border-radius: 99px; }
+  .cta-card .alt { font-size: 11pt; color: #9fb0d3; margin-top: 10px; }
+  .ps { margin-top: 18px; font-size: 12pt; color: var(--muted); }
+</style>
+</head>
+<body>
+
+<!-- 1. cover -->
+<section class="page cover">
+  <span class="tag">מדריך קצר · 7 דקות קריאה</span>
+  <h1>הלקוח קיבל את ההצעה שלך…<br><span>ונעלם.</span></h1>
+  <p class="sub">6 תיקונים קטנים בהצעת המחיר שגורמים ליותר לקוחות להגיד "סגרנו". בלי להוריד מחיר.</p>
+  <div class="what">
+    <div>מה לשנות כבר בהצעה הבאה שתשלח</div>
+    <div>דוגמאות של "לפני ואחרי"</div>
+    <div>הודעת פולואפ מוכנה להעתקה לוואטסאפ</div>
+    <div>צ'קליסט של 2 דקות לבדיקת ההצעה שלך</div>
+  </div>
+  <div class="by">
+    <div class="avatar">א</div>
+    <div>אופק חשמן<small>עוזר לבעלי עסקים לסגור יותר עבודות עם פחות ניירת</small></div>
+  </div>
+</section>
+
+<!-- 2. note + tips 1-2 -->
+<section class="page">
+  <div class="note">
+    <div class="hand">רגע לפני שמתחילים…</div>
+    <p>יוצא לי לראות הרבה הצעות מחיר של בעלי עסקים, ומשהו חוזר על עצמו כמעט תמיד: <b>העבודה מעולה, אבל ההצעה לא מוכרת אותה.</b> שורה אחת עם מחיר, שנשלחת שלושה ימים אחרי הפגישה, ואז שקט.</p>
+    <p>הלקוח לא נעלם כי אתה יקר. בדרך כלל הוא פשוט לא הבין מה הוא מקבל, או שמישהו אחר ענה לו מהר יותר.</p>
+    <p style="margin-bottom:0">אז ריכזתי כאן את הדברים הכי פשוטים שעושים את ההבדל. אין פה שום דבר שצריך לקנות. תיקח, תיישם, ותראה מה קורה.</p>
+    <div class="sign">אופק</div>
+  </div>
+
+  <div style="height:22px"></div>
+
+  <div class="tip">
+    <div class="num">1</div>
+    <div>
+      <h2>מי שעונה ראשון, מתחיל עם יתרון</h2>
+      <p>לקוח שמבקש הצעה בדרך כלל מבקש גם משניים־שלושה אחרים. ההצעה שמגיעה באותו יום כבר מסמנת לו "הבן אדם הזה רציני", עוד לפני שהוא הסתכל על המחיר.</p>
+      <div class="do"><b>מה לעשות:</b> הכן מראש תבנית לשלוש העבודות שאתה עושה הכי הרבה. כשיש בסיס מוכן, הצעה לוקחת עשר דקות ולא ערב שלם.</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="num">2</div>
+    <div>
+      <h2>תכתוב מה הלקוח מקבל, לא רק כמה זה עולה</h2>
+      <p>כשרואים רק מחיר, אין במה להשוות חוץ מהמחיר. כשרואים מה כלול, פתאום ההצעה הזולה של המתחרה נראית חשודה.</p>
+      <div class="compare">
+        <div class="box bad"><span class="lbl">✗ ככה זה נראה בדרך כלל</span>התקנת מזגן: 3,200</div>
+        <div class="box good"><span class="lbl">✔ ככה זה מוכר</span>התקנת מזגן 1.5 כ"ס בחדר שינה, כולל עד 3 מ' צנרת, קידוח, ניקיון ופינוי פסולת בסוף, ושנת אחריות על ההתקנה.<br><b>3,200 ₪ כולל מע"מ</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span>הלקוח קיבל את ההצעה שלך… ונעלם.</span><span>2</span></div>
+</section>
+
+<!-- 3. tips 3-5 -->
+<section class="page">
+  <div class="tip">
+    <div class="num">3</div>
+    <div>
+      <h2>מחיר אחד, ברור, בלי הפתעות</h2>
+      <p>"זה כולל מע"מ?" "יש עוד תוספות?" כל שאלה כזאת היא עוד יום שהלקוח לא חותם. ולפעמים הוא בכלל לא שואל, רק מניח את הגרוע ועובר הלאה.</p>
+      <div class="do"><b>מה לעשות:</b> שורת "סה"כ לתשלום" אחת, גדולה ובולטת, ולידה מה היא כוללת. ואם יש דברים שלא כלולים, תכתוב אותם במפורש. זה דווקא בונה אמון.</div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="num">4</div>
+    <div>
+      <h2>תן לו לבחור "איזה", לא "אם"</h2>
+      <p>כשיש מחיר אחד, ההחלטה של הלקוח היא כן או לא. כשיש שלוש אפשרויות, הוא מתחיל לחשוב איזו מהן מתאימה לו. ורוב האנשים בוחרים את האמצעית.</p>
+      <div class="tiers">
+        <div class="tier"><b>בסיס</b>מה שחייבים, בלי תוספות<span class="price">₪ X</span></div>
+        <div class="tier rec"><b>מומלץ</b>מה שרוב הלקוחות באמת צריכים<span class="price">₪ Y</span></div>
+        <div class="tier"><b>פרימיום</b>הכל כולל, ראש שקט<span class="price">₪ Z</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tip">
+    <div class="num">5</div>
+    <div>
+      <h2>תאריך תוקף + מה קורה אחרי ה"כן"</h2>
+      <p>הצעה בלי תאריך תוקף אומרת ללקוח "אין לחץ, תחשוב על זה"… עד שהוא שוכח. ולקוח שלא יודע מה השלב הבא נתקע בדיוק ברגע שהוא כבר רוצה להתקדם.</p>
+      <div class="do"><b>מה לעשות:</b> בסוף ההצעה תכתוב שתי שורות:<br>"ההצעה בתוקף עד [תאריך]."<br>"לאישור: שולחים לי 'מאשר' בוואטסאפ, מעבירים מקדמה, וקובעים תאריך."</div>
+    </div>
+  </div>
+
+  <div class="footer"><span>הלקוח קיבל את ההצעה שלך… ונעלם.</span><span>3</span></div>
+</section>
+
+<!-- 4. tip 6 + checklist -->
+<section class="page">
+  <div class="tip">
+    <div class="num">6</div>
+    <div>
+      <h2>הפולואפ הוא לא נדנוד. הוא שירות.</h2>
+      <p>הרבה עסקאות לא הולכות לאיבוד כי הלקוח אמר "לא". הן הולכות לאיבוד כי אף אחד לא חזר אליו. הוא היה עסוק, ההודעה נקברה בוואטסאפ, וזהו.</p>
+      <p class="why">הנה הודעה שאפשר להעתיק כמו שהיא, יומיים אחרי ששלחת הצעה:</p>
+      <div class="wa">
+        <span class="meta">וואטסאפ · יומיים אחרי</span>
+        היי [שם], רציתי לוודא שההצעה הגיעה ושהכל ברור 🙂<br>
+        אם יש משהו שתרצה לשנות או להוריד כדי שזה יתאים לך יותר, תגיד לי ואני אסדר.<br>
+        ואם כבר החלטת ללכת על משהו אחר, הכל טוב, רק תעדכן שאדע.
+      </div>
+      <p class="why" style="margin-top:8px">המשפט האחרון הוא הסוד: כשנותנים ללקוח "אישור" להגיד לא, הרבה יותר אנשים פשוט עונים. וחלק מהם עונים "בעצם… בוא נסגור".</p>
+    </div>
+  </div>
+
+  <div class="pagehead" style="margin-top:6px">בדיקה של 2 דקות</div>
+  <div class="pagetitle" style="font-size:20pt;margin-bottom:12px">תפתח את ההצעה האחרונה ששלחת ותסמן:</div>
+  <ul class="check">
+    <li>יצאה ללקוח תוך 24 שעות מהשיחה או מהפגישה</li>
+    <li>כתוב בה מה הלקוח מקבל, לא רק שם העבודה</li>
+    <li>יש שורת "סה"כ" אחת ברורה, וכתוב אם היא כוללת מע"מ</li>
+    <li>יש יותר מאפשרות אחת לבחירה</li>
+    <li>יש תאריך תוקף</li>
+    <li>כתוב מה בדיוק עושים כדי לאשר</li>
+    <li>היא נראית מקצועית: לוגו, פרטים, מסודרת ונוחה לקריאה בטלפון</li>
+    <li>חזרת ללקוח אחרי יומיים־שלושה</li>
+  </ul>
+  <div class="score">
+    <div><b>7–8 ✔</b>מעולה. אתה כבר עושה את מה שרוב המתחרים שלך לא עושים.</div>
+    <div><b>4–6 ✔</b>יש פה כסף על הרצפה. תתחיל מהסעיפים שלא סימנת.</div>
+    <div><b>0–3 ✔</b>החדשות הטובות: כל תיקון קטן פה ירגיש מיד.</div>
+  </div>
+
+  <div class="footer"><span>הלקוח קיבל את ההצעה שלך… ונעלם.</span><span>4</span></div>
+</section>
+
+<!-- 5. CTA -->
+<section class="page">
+  <div class="pagehead">ומה עכשיו?</div>
+  <div class="pagetitle">אפשר ליישם את כל זה לבד.<br>אבל אם אין לך כוח לשבת על זה בערב…</div>
+
+  <p>בוא נהיה כנים: רוב בעלי העסקים יודעים שההצעות שלהם יכולות להיות טובות יותר. הבעיה היא לא ידע, אלא <b>זמן</b>. אחרי יום עבודה בשטח, הדבר האחרון שבא לך זה לפתוח וורד ולעצב טבלה.</p>
+  <p>בשביל זה בניתי מערכת קטנה: ממלאים כמה פרטים מהטלפון, והיא מוציאה תוך דקה הצעת מחיר מעוצבת עם הלוגו שלך, לפי המחירון שלך, עם כל מה שכתוב במדריך הזה כבר בפנים.</p>
+
+  <div class="cta-card">
+    <h2>15 דקות שיחה. בלי מצגות, בלי לחץ.</h2>
+    <ul>
+      <li>נעבור יחד על הצעת מחיר אחת אמיתית שלך, ואגיד לך בכנות מה הייתי משנה</li>
+      <li>אם בא לך, נפיק בשיחה הצעה חדשה על לקוח אמיתי שלך ותראה את ההבדל</li>
+      <li>ואם המערכת לא מתאימה לך? יצאת עם הצעה טובה יותר. גם זה בסדר.</li>
+    </ul>
+    <a class="btn" href="https://wa.me/972535309905?text=%D7%94%D7%99%D7%99%20%D7%90%D7%95%D7%A4%D7%A7%2C%20%D7%A7%D7%A8%D7%90%D7%AA%D7%99%20%D7%90%D7%AA%20%D7%94%D7%9E%D7%93%D7%A8%D7%99%D7%9A%20%D7%95%D7%90%D7%A9%D7%9E%D7%97%20%D7%9C%D7%A7%D7%91%D7%95%D7%A2%2015%20%D7%93%D7%A7%D7%95%D7%AA%20%F0%9F%99%82">💬 לקביעת שיחה בוואטסאפ</a>
+    <div class="alt">או פשוט לענות להודעה ששלחתי לך · 053-5309905 · ofekhashman234@gmail.com</div>
+  </div>
+
+  <p class="ps"><b>נ.ב.</b> גם אם לא נדבר, תעשה לי טובה ותנסה את הודעת הפולואפ מעמוד 4 על לקוח אחד שלא חזר אליך. אשמח לשמוע מה קרה 🙂</p>
+
+  <div class="footer"><span>אופק חשמן · בניית אתרים, אוטומציות וסוכני AI לעסקים</span><span>5</span></div>
+</section>
+
+</body>
+</html>
