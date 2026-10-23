@@ -24,7 +24,7 @@
   --gold-soft: #D9C49B;
   --muted: #6F7863;
   --font: "Heebo", "Assistant", "Arial Hebrew", "Segoe UI", Arial, sans-serif;
-  --card-w: min(76vw, calc((100vh - 270px) * 0.647), calc((100dvh - 270px) * 0.647), 330px);
+  --card-w: min(76vw, calc((100vh - 310px) * 0.647), calc((100dvh - 310px) * 0.647), 330px);
   color-scheme: light;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -169,6 +169,9 @@ body::after {
 .thumb.locked svg { position: absolute; inset: 0; width: 100%; height: 100%; }
 .thumb.today::after { content: "היום"; position: absolute; top: 6px; inset-inline-start: 6px; background: var(--ink); color: var(--paper); font: 700 .7rem/1 var(--font); padding: 4px 7px; border-radius: 99px; }
 .gallery-foot { padding-top: 12px; }
+.status .hint { font-size: .88rem; color: var(--sage); font-weight: 500; }
+.nudge { display: flex; flex-direction: column; align-items: center; gap: 12px; text-align: center; background: var(--paper); border: 1px solid var(--gold-soft); border-radius: 16px; padding: 14px 16px; max-width: 340px; }
+.nudge p { margin: 0; font-size: 1rem; line-height: 1.5; font-weight: 500; }
 .tip { margin: 10px 0 0; font-size: .82rem; color: var(--muted); text-align: center; text-wrap: balance; }
 
 /* ---------- lightbox ---------- */
@@ -187,6 +190,17 @@ body::after {
   .fade-in, .lightbox img { animation: none; }
 }
 @media (min-height: 760px) { .welcome { gap: 26px; } }
+@media (max-width: 360px) {
+  .btn { padding: 13px 22px; font-size: 1rem; }
+  .ghost { padding: 10px 13px; font-size: .9rem; gap: 6px; }
+  .row { gap: 8px; }
+  .icon-btn { width: 40px; height: 40px; }
+}
+@media (max-height: 620px) {
+  .stage-wrap { gap: 10px; }
+  .actions { gap: 8px; }
+  .status { font-size: .9rem; }
+}
 </style>
 </head><body>
 
@@ -263,12 +277,10 @@ body::after {
     33: "יום הולדת שמח!\nמרינה\nבאהבה,\nאופק"
   };
   const DAILY = Array.from({ length: 30 }, (_, i) => i + 2); // cards 2..31
-  const START = new Date(2026, 9, 23); // day 0 of the daily deck (the day the gift is sent)
-  const DAY = 86400000;
   const img = n => `cards/${String(n).padStart(2, "0")}.jpg`;
 
   // ---------- storage (optional) ----------
-  const KEY = "marina-cards-v1";
+  const KEY = "marina-cards-v2";
   function load() {
     try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch { return {}; }
   }
@@ -276,6 +288,7 @@ body::after {
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch {}
   }
   const state = load();
+  if (!Array.isArray(state.opened)) state.opened = [];
 
   // ---------- dates ----------
   function today() {
@@ -288,31 +301,36 @@ body::after {
   }
   const TODAY = today();
   const todayKey = `${TODAY.getFullYear()}-${TODAY.getMonth() + 1}-${TODAY.getDate()}`;
-  const dayIndex = Math.max(0, Math.round((TODAY - START) / DAY));
 
-  // Deterministic shuffle per 30-day cycle: same card all day, no repeats until all 30 are out.
+  // The deck's fixed order: "the next card" always follows it; shuffling draws any unopened card.
   function rng(seed) {
     return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
   }
-  function cycleOrder(cycle) {
-    const a = DAILY.slice(), r = rng(19700 + cycle * 7919);
+  const ORDER = (() => {
+    const a = DAILY.slice(), r = rng(19700);
     for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-    if (cycle > 0 && a[0] === cycleOrder(cycle - 1)[29]) [a[0], a[1]] = [a[1], a[0]];
     return a;
-  }
-  const cardForDay = d => cycleOrder(Math.floor(d / 30))[d % 30];
-  const TODAY_CARD = cardForDay(dayIndex);
+  })();
 
   const introDone = () => state.intro >= 2;
-  const drewToday = () => state.drawn === todayKey;
-
-  function revealedSet() {
-    const s = new Set([1, 32, 33]);
-    const upTo = drewToday() ? dayIndex : dayIndex - 1;
-    if (upTo >= 29) DAILY.forEach(n => s.add(n));
-    else for (let d = 0; d <= upTo; d++) s.add(cardForDay(d));
-    return s;
+  const isOpen = n => state.opened.includes(n);
+  const allOpen = () => DAILY.every(isOpen);
+  const openedToday = () => state.today === todayKey ? state.todayCards || [] : [];
+  function markOpened(n) {
+    if (!isOpen(n)) state.opened.push(n);
+    if (state.today !== todayKey) { state.today = todayKey; state.todayCards = []; }
+    if (!state.todayCards.includes(n)) state.todayCards.push(n);
+    save();
   }
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  function nextCard(exclude) {
+    return ORDER.find(n => !isOpen(n)) ?? pick(DAILY.filter(n => n !== exclude));
+  }
+  function shuffledCard(exclude) {
+    const pool = DAILY.filter(n => !isOpen(n));
+    return pick(pool.length ? pool : DAILY.filter(n => n !== exclude));
+  }
+  const revealedSet = () => new Set([1, 32, 33, ...state.opened]);
 
   const fmtDay = new Intl.DateTimeFormat("he-IL", { weekday: "long", day: "numeric", month: "long" });
 
@@ -338,7 +356,8 @@ body::after {
   function showWelcome() {
     flowId++;
     const first = !introDone();
-    const label = first ? "שלפי קלף" : drewToday() ? "לקלף של היום" : "שלפי את הקלף של היום";
+    const todays = openedToday();
+    const label = first ? "שלפי קלף" : todays.length ? "לקלף של היום" : "שלפי את הקלף של היום";
     app.replaceChildren(h(`
       <section class="view welcome fade-in">
         <svg class="sun" viewBox="0 0 120 60" aria-hidden="true">
@@ -356,7 +375,11 @@ body::after {
         <button class="btn" id="go" type="button">${label}</button>
         ${first ? "" : `<button class="text-link sub-link" id="all" type="button">לכל הקלפים</button>`}
       </section>`));
-    app.querySelector("#go").onclick = () => !first ? drawFlow(TODAY_CARD, "daily") : drawFlow(state.intro === 1 ? 32 : 33, "intro");
+    app.querySelector("#go").onclick = () => {
+      if (first) drawFlow(state.intro === 1 ? 32 : 33, "intro");
+      else if (todays.length) drawFlow(todays[todays.length - 1], "view");
+      else drawFlow(nextCard(), "next");
+    };
     const all = app.querySelector("#all");
     if (all) all.onclick = showGallery;
   }
@@ -407,12 +430,6 @@ body::after {
     v.flip.classList.remove("lift");
   }
 
-  function hoursLeft() {
-    const next = new Date(TODAY.getTime() + DAY);
-    const hrs = Math.max(1, Math.ceil((next - new Date()) / 3600000));
-    return hrs > 23 ? "מחר" : hrs === 1 ? "בעוד פחות משעה" : hrs === 2 ? "בעוד שעתיים" : `בעוד ${hrs} שעות`;
-  }
-
   function shareLink(n) {
     const text = `"${TEXTS[n].replace(/\n/g, " ")}" 💛`;
     return `https://wa.me/?text=${encodeURIComponent(text)}`;
@@ -427,16 +444,33 @@ body::after {
   const galleryBtn = () => btn(`${ICON.grid}כל הקלפים`, showGallery, "ghost");
   const shareBtn = n => h(`<a class="ghost" target="_blank" rel="noopener" href="${shareLink(n)}">${ICON.share}שיתוף</a>`);
 
+  // A gentle nudge, once a day, before opening more than one card.
+  function gate(box0, go) {
+    if (!openedToday().length || state.warned === todayKey) return go();
+    const restore = [...box0.childNodes];
+    const box = h(`
+      <div class="nudge">
+        <p>המלצה קטנה: קלף אחד ביום,<br>וכל בוקר מחכה לך הפתעה חדשה.</p>
+      </div>`);
+    const yes = btn("לפתוח עוד אחד", () => { state.warned = todayKey; save(); go(); });
+    const no = btn("אחכה למחר", () => { restore.forEach(el => { if (el.disabled !== undefined) el.disabled = false; el.querySelectorAll?.("button").forEach(b => b.disabled = false); }); box0.replaceChildren(...restore); }, "ghost");
+    box.append(row(yes, no));
+    box0.replaceChildren(box);
+  }
+
   let flowId = 0;
   async function drawFlow(n, mode) {
     const id = ++flowId;
-    const already = mode === "daily" && drewToday();
-    const eyebrow = mode === "daily" ? `הקלף של ${fmtDay.format(TODAY)}` : mode === "intro" && n === 33 ? "קלף ראשון, במיוחד להיום" : mode === "intro" ? "ועוד קלף אחד, לפני שמתחילים" : "קלף לרגע הזה";
+    const shuffle = mode === "shuffle" || (mode === "intro" && n === 33);
+    const firstToday = !openedToday().length || openedToday()[0] === n;
+    const eyebrow = mode === "intro" && n === 33 ? "קלף ראשון, במיוחד להיום"
+      : mode === "intro" ? "ועוד קלף אחד, לפני שמתחילים"
+      : firstToday ? `הקלף של ${fmtDay.format(TODAY)}` : "עוד קלף להיום";
     const v = stageView(eyebrow);
-    v.status.textContent = already ? "" : "רגע, מערבבים…";
+    v.status.textContent = shuffle ? "רגע, מערבבים…" : "";
     v.flip.onclick = () => { if (v.stage.classList.contains("revealed")) v.flip.classList.toggle("open"); };
 
-    await reveal(v, n, { shuffle: !already });
+    await reveal(v, n, { shuffle });
     if (id !== flowId || !v.stage.isConnected) return;
 
     if (mode === "intro" && n === 33) {
@@ -444,36 +478,40 @@ body::after {
       state.intro = Math.max(state.intro || 0, 1); save();
       v.status.textContent = "מזל טוב! 🎂";
       addActions(v, [btn("יש עוד קלף בשבילך", () => drawFlow(32, "intro"))]);
-    } else if (mode === "intro") {
-      state.intro = 2; save();
-      v.status.textContent = "ומחר בבוקר? קלף חדש.";
-      addActions(v, [btn("ועכשיו, הקלף של היום", () => drawFlow(TODAY_CARD, "daily"))]);
-    } else if (mode === "daily") {
-      state.drawn = todayKey; state.intro = 2; save();
-      const left = 30 - (dayIndex % 30) - 1;
-      v.status.innerHTML = `הקלף הבא מחכה לך ${hoursLeft()}<br>נשארו עוד ${left} קלפים בחפיסה`;
-      if (left === 0) v.status.textContent = "זה הקלף האחרון בחפיסה. מחר מערבבים ומתחילים מחדש.";
-      const home = btn(ICON.home, showWelcome, "icon-btn");
-      home.setAttribute("aria-label", "למסך הפתיחה");
-      addActions(v, [row(galleryBtn(), shareBtn(n), home)]);
-    } else {
-      if (n === 33) confetti();
-      v.status.textContent = "אפשר ללחוץ על הקלף כדי להפוך אותו";
-      addActions(v, [row(btn(`${ICON.shuffle}עוד אחד`, () => drawFlow(randomRevealed(n), "free"), "ghost"), galleryBtn())]);
+      return;
     }
-  }
+    if (mode === "intro") {
+      state.intro = 2; save();
+      v.status.textContent = "ומכאן, קלף אחד בכל בוקר.";
+      addActions(v, [btn("לקלף הראשון בחפיסה", () => drawFlow(nextCard(), "next"))]);
+      return;
+    }
 
-  function randomRevealed(exclude) {
-    const pool = [...revealedSet()].filter(n => n !== exclude);
-    return pool[Math.floor(Math.random() * pool.length)];
+    state.intro = 2;
+    markOpened(n);
+    if (n === 33) confetti();
+    const count = DAILY.filter(isOpen).length;
+    v.status.innerHTML = allOpen()
+      ? "פתחת את כל החפיסה 💛<br>מכאן כל שליפה היא מכל הקלפים"
+      : `נפתחו ${count} מתוך 30 קלפים<br><span class="hint">מומלץ: קלף אחד בכל בוקר</span>`;
+    const home = btn(ICON.home, showWelcome, "icon-btn");
+    home.setAttribute("aria-label", "למסך הפתיחה");
+    addActions(v, [
+      row(
+        btn("לקלף הבא", () => gate(v.actions, () => drawFlow(nextCard(n), "next"))),
+        btn(`${ICON.shuffle}ערבבי ושלפי`, () => gate(v.actions, () => drawFlow(shuffledCard(n), "shuffle")), "ghost")
+      ),
+      row(galleryBtn(), shareBtn(n), home)
+    ]);
   }
 
   function showGallery() {
     flowId++;
     const open = revealedSet();
-    const order = [1, 33, 32, ...Array.from({ length: Math.min(dayIndex + 1, 30) }, (_, d) => cardForDay(d))];
-    DAILY.forEach(n => { if (!order.includes(n)) order.push(n); });
+    const order = [1, 33, 32, ...state.opened];
+    ORDER.forEach(n => { if (!order.includes(n)) order.push(n); });
     const count = open.size;
+    const todays = openedToday();
     const view = h(`
       <section class="view gallery fade-in">
         <header class="gallery-head">
@@ -486,12 +524,12 @@ body::after {
         <div class="progress" aria-hidden="true"><span style="width:${(count / 33 * 100).toFixed(1)}%"></span></div>
         <div class="grid-scroll"><div class="grid" id="grid"></div></div>
         <div class="gallery-foot row" id="foot"></div>
-        <p class="tip">טיפ: אפשר להוסיף את האתר למסך הבית, ואז הוא נפתח כמו אפליקציה.</p>
+        <p class="tip">מומלץ לפתוח קלף אחד בכל בוקר. ואפשר להוסיף את האתר למסך הבית, ואז הוא נפתח כמו אפליקציה.</p>
       </section>`);
     const grid = view.querySelector("#grid");
     order.forEach(n => {
       if (open.has(n)) {
-        const b = h(`<button class="thumb${n === TODAY_CARD && drewToday() ? " today" : ""}" type="button"><img loading="lazy" src="${img(n)}" alt=""></button>`);
+        const b = h(`<button class="thumb${todays.includes(n) ? " today" : ""}" type="button"><img loading="lazy" src="${img(n)}" alt=""></button>`);
         b.querySelector("img").alt = TEXTS[n].replace(/\n/g, " ");
         b.onclick = () => lightbox(n);
         grid.append(b);
@@ -500,8 +538,13 @@ body::after {
       }
     });
     const foot = view.querySelector("#foot");
-    if (!drewToday() && introDone()) foot.append(btn("שלפי את הקלף של היום", () => drawFlow(TODAY_CARD, "daily")));
-    else foot.append(btn(`${ICON.shuffle}ערבבי ושלפי קלף לרגע הזה`, () => drawFlow(randomRevealed(), "free"), "ghost"));
+    const go = fn => () => gate(foot, fn);
+    if (introDone()) {
+      foot.append(
+        btn(todays.length ? "לקלף הבא" : "שלפי את הקלף של היום", go(() => drawFlow(nextCard(), "next"))),
+        btn(`${ICON.shuffle}ערבבי ושלפי`, go(() => drawFlow(shuffledCard(), "shuffle")), "ghost")
+      );
+    }
     view.querySelector("#home").onclick = showWelcome;
     app.replaceChildren(view);
   }
@@ -546,7 +589,7 @@ body::after {
   });
 
   // preload the card she'll see first
-  preload(introDone() ? TODAY_CARD : 33);
+  preload(introDone() ? nextCard() : 33);
   showWelcome();
 })();
 </script>
