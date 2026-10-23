@@ -176,7 +176,7 @@ body::after {
 
 /* ---------- lightbox ---------- */
 .lightbox { position: fixed; inset: 0; z-index: 20; background: rgba(251,244,234,.94); backdrop-filter: blur(6px); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: 24px max(16px, env(safe-area-inset-right, 0px)) 24px max(16px, env(safe-area-inset-left, 0px)); }
-.lightbox img { width: min(82vw, calc((100dvh - 170px) * 0.647), 380px); border-radius: 14px; box-shadow: 0 18px 40px rgba(62,74,52,.25); animation: pop .35s ease; }
+.lightbox img { width: min(82vw, calc((100vh - 150px) * 0.647), calc((100dvh - 150px) * 0.647), 460px); border-radius: 14px; box-shadow: 0 18px 40px rgba(62,74,52,.25); animation: pop .35s ease; }
 @keyframes pop { from { transform: scale(.9); opacity: 0; } }
 
 /* ---------- confetti ---------- */
@@ -200,6 +200,82 @@ body::after {
   .stage-wrap { gap: 10px; }
   .actions { gap: 8px; }
   .status { font-size: .9rem; }
+}
+
+/* ---------- tablets & computers ---------- */
+@media (min-width: 600px) {
+  .view.gallery { max-width: 1100px; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 16px; }
+  .gallery-head h2 { font-size: 1.6rem; }
+}
+@media (min-width: 1100px) { .grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; } }
+@media (min-width: 600px) and (min-height: 760px) { :root { --card-w: min(76vw, calc((100vh - 330px) * 0.647), calc((100dvh - 330px) * 0.647), 420px); } }
+
+/* side by side: computers, and phones held sideways */
+@media (min-width: 900px) and (min-height: 560px) {
+  :root { --card-w: min(calc((100vh - 110px) * 0.647), calc((100dvh - 110px) * 0.647), 440px); }
+  .welcome { gap: 28px; }
+  .sun { width: 120px; }
+  .welcome h1 { font-size: clamp(5rem, 11vh, 7rem); }
+  .welcome .lead { font-size: clamp(1.7rem, 3.6vh, 2.2rem); }
+  .welcome .small { font-size: 1.25rem; }
+  .divider::before, .divider::after { width: 80px; }
+  .btn { font-size: 1.15rem; padding: 17px 40px; }
+  .ghost { font-size: 1.02rem; padding: 13px 22px; }
+  .card-view .eyebrow { font-size: 1.4rem; }
+  .card-view .status { font-size: 1.25rem; line-height: 1.6; }
+  .status .hint { font-size: 1.02rem; }
+  .icon-btn { width: 48px; height: 48px; }
+  .nudge p { font-size: 1.12rem; }
+  .gallery-head p { font-size: 1.02rem; }
+  .tip { font-size: .92rem; }
+}
+@media (min-width: 900px) and (min-height: 560px), (orientation: landscape) and (max-height: 560px) {
+  .view.card-view {
+    max-width: 1000px;
+    display: grid;
+    grid-template-columns: auto minmax(0, 380px);
+    grid-template-rows: 1fr auto 1fr;
+    grid-template-areas: "stage eyebrow" "stage status" "stage actions";
+    column-gap: clamp(28px, 6vw, 96px);
+    row-gap: 18px;
+    justify-content: center;
+    align-content: center;
+  }
+  .card-view .stage-wrap { display: contents; }
+  .card-view .stage { grid-area: stage; align-self: center; }
+  .card-view .eyebrow { grid-area: eyebrow; align-self: end; text-align: start; font-size: 1.15rem; }
+  .card-view .status { grid-area: status; text-align: start; font-size: 1.08rem; }
+  .card-view .actions { grid-area: actions; align-self: start; align-items: flex-start; }
+  .card-view .row { justify-content: flex-start; }
+  .card-view .nudge { align-items: flex-start; text-align: start; }
+}
+@media (orientation: landscape) and (max-height: 560px) {
+  :root { --card-w: min(calc((100vh - 36px) * 0.647), calc((100dvh - 36px) * 0.647), 300px); }
+  .app { padding-block: 10px; }
+  .view.card-view { row-gap: 10px; column-gap: 32px; }
+  .card-view .eyebrow { font-size: .95rem; }
+  .card-view .status { font-size: .92rem; }
+  .welcome { gap: 10px; }
+  .welcome .sun { display: none; }
+  .welcome h1 { font-size: 3rem; }
+  .welcome .lead { font-size: 1.15rem; }
+  .welcome .btn { margin-top: 2px; }
+  .view.gallery { flex: none; }
+  .grid-scroll { flex: none; overflow: visible; min-height: 0; }
+  .grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 12px; }
+  .lightbox { flex-direction: row; gap: 24px; }
+  .lightbox .row { flex-direction: column; }
+}
+
+/* mouse & trackpad */
+@media (hover: hover) and (pointer: fine) {
+  .btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(62,74,52,.28); }
+  .ghost:hover, .icon-btn:hover { background: rgba(176,138,74,.10); }
+  .thumb:not(.locked) { transition: transform .2s ease, box-shadow .2s ease; }
+  .thumb:not(.locked):hover { transform: translateY(-4px); box-shadow: 0 10px 22px rgba(62,74,52,.18); }
+  .flip:hover .flip-inner { filter: drop-shadow(0 6px 14px rgba(62,74,52,.12)); }
+  .text-link:hover { color: var(--ink); }
 }
 </style>
 </head><body>
@@ -386,7 +462,7 @@ body::after {
 
   function stageView(eyebrow) {
     app.replaceChildren(h(`
-      <section class="view">
+      <section class="view card-view">
         <div class="stage-wrap">
           <p class="eyebrow" id="eyebrow">${eyebrow}</p>
           <div class="stage" id="stage">
