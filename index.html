@@ -135,6 +135,7 @@ body::after {
   box-shadow: 0 14px 34px rgba(62,74,52,.20), 0 2px 6px rgba(62,74,52,.10);
 }
 .face.front { transform: rotateY(180deg); background: var(--paper); }
+.flip .face.back { transform: rotateY(0deg); }
 .face.front img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* card back */
@@ -274,7 +275,8 @@ body::after {
   .ghost:hover, .icon-btn:hover { background: rgba(176,138,74,.10); }
   .thumb:not(.locked) { transition: transform .2s ease, box-shadow .2s ease; }
   .thumb:not(.locked):hover { transform: translateY(-4px); box-shadow: 0 10px 22px rgba(62,74,52,.18); }
-  .flip:hover .flip-inner { filter: drop-shadow(0 6px 14px rgba(62,74,52,.12)); }
+  .face { transition: box-shadow .25s ease; }
+  .flip:hover .face { box-shadow: 0 20px 44px rgba(62,74,52,.26), 0 2px 6px rgba(62,74,52,.10); }
   .text-link:hover { color: var(--ink); }
 }
 </style>
